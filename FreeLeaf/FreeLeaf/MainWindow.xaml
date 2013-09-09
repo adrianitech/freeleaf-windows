@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:model="clr-namespace:FreeLeaf.ViewModel"
         DataContext="{Binding Path=Main, Source={StaticResource Locator}}"
-        Title="FreeLeaf" Height="470" Width="400" WindowStartupLocation="CenterScreen"
+        Title="FreeLeaf - Discovery" Height="470" Width="400" WindowStartupLocation="CenterScreen"
         WindowStyle="None" AllowsTransparency="True" Background="{x:Null}" ResizeMode="NoResize"
         FontFamily="Assets/#Cantarell Regular" UseLayoutRounding="True">
     
