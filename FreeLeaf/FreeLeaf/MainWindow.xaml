@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:model="clr-namespace:FreeLeaf.ViewModel"
         DataContext="{Binding Path=Main, Source={StaticResource Locator}}"
-        Title="FreeLeaf - Discovery" Height="470" Width="400" WindowStartupLocation="CenterScreen"
-        WindowStyle="None" AllowsTransparency="True" Background="{x:Null}" ResizeMode="NoResize"
-        FontFamily="Assets/#Cantarell Regular" UseLayoutRounding="True">
+        Title="FreeLeaf" Height="470" SizeToContent="Width" WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True" Background="{x:Null}" ResizeMode="CanResize"
+        FontFamily="Assets/#Segoe WP" UseLayoutRounding="True">
     
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="40" />
@@ -21,11 +21,185 @@
         <model:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
     </Window.Resources>
 
-    <Border BorderThickness="1" BorderBrush="#94c147" Background="White" Margin="10">
-        <Border.Effect>
-            <DropShadowEffect ShadowDepth="0" BlurRadius="10" Color="#94c147" Opacity="0.5" />
-        </Border.Effect>
+    <Grid Background="White" Margin="10">
+        <Grid.Effect>
+            <DropShadowEffect ShadowDepth="0" BlurRadius="10" Color="Black" Opacity="0.4" />
+        </Grid.Effect>
         <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" />
+                <ColumnDefinition x:Name="ColumnDeviceInfo" Width="400" />
+            </Grid.ColumnDefinitions>
+            <Grid Background="#f6f5f1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="60" />
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Border Grid.RowSpan="3" BorderThickness="0,0,1,0" BorderBrush="#e7e7e5" />
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,30,30,0">
+                        <Image Source="Assets/minimize_window-14.png" Width="14" Height="14" />
+                        <Image Margin="20,0,0,0" Source="Assets/maximize_window-14.png" Width="16" Height="14" />
+                        <Image Source="Assets/close_window-14.png" Width="14" Height="14" Margin="20,0,0,0" />
+                    </StackPanel>
+                </Grid>
+                <ListView x:Name="DeviceList" Grid.Row="1" Padding="0" BorderThickness="0" Margin="0,20,0,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="DeviceList_SelectionChanged" SelectionMode="Single"
+                      ItemsSource="{Binding Items}">
+                    <ListView.Style>
+                        <Style TargetType="ListView">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListView">
+                                        <ScrollViewer>
+                                            <ItemsPresenter />
+                                        </ScrollViewer>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsGrouping" Value="True">
+                                                <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.Style>
+                    <ListBox.Resources>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <StackPanel Margin="0,0,0,20">
+                                            <ContentPresenter />
+                                            <ItemsPresenter />
+                                        </StackPanel>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.Resources>
+                    <ListView.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock Margin="25,0,25,15" Foreground="#292826" FontSize="32" FontFamily="Assets/#Segoe WP Light">
+                                        <Run Text="{Binding Path=Name, Mode=OneWay, Converter={StaticResource GroupNameConverter}}" /> (<Run Text="{Binding Path=ItemCount, Mode=OneWay}" />)
+                                    </TextBlock>
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ListView.GroupStyle>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border Name="Border" Padding="25,0,25,0" Height="40" Background="Transparent" BorderThickness="0,1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Ellipse Name="AvailableEllipse" Fill="#b2b2b2" Width="9" Height="9" VerticalAlignment="Center" />
+                                                <TextBlock Grid.Column="1" Margin="10,0" Text="{Binding Name}" Foreground="#424242" FontSize="14" FontFamily="Assets/#Segoe WP" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                                <Button Name="PinButton" Grid.Column="2" Width="16" Height="16" VerticalAlignment="Center" Visibility="Collapsed" Click="PinButton_Click" />
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding IsAvailable}" Value="True">
+                                                <Setter TargetName="AvailableEllipse" Property="Fill" Value="#81ac40" />
+                                            </DataTrigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="#faf9f7" />
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="#faf9f7" />
+                                                <Setter TargetName="PinButton" Property="Visibility" Value="Visible" />
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="Border" Property="Background" Value="White" />
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="#e7e7e5" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
+                <TextBox Grid.Row="2" Margin="25,15">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="TextBox">
+                                        <Border Padding="10,5" BorderThickness="1" BorderBrush="#e7e7e5" Background="White">
+                                            <ScrollViewer x:Name="PART_ContentHost" />
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
+            </Grid>
+            <Grid Grid.Column="1" ClipToBounds="True">
+                <StackPanel VerticalAlignment="Center">
+                    <Grid>
+                        <Ellipse Fill="#d3f696" StrokeThickness="1" Stroke="#b1df63" Width="100" Height="100">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                                    <Setter Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="0" ScaleY="0" />
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedItem.LastUpdated}" Value="0">
+                                            <DataTrigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation From="0" To="4" Duration="0:0:1.500" Storyboard.TargetProperty="RenderTransform.ScaleX" />
+                                                        <DoubleAnimation From="0" To="4" Duration="0:0:1.500" Storyboard.TargetProperty="RenderTransform.ScaleY" />
+                                                        <DoubleAnimation From="1" To="0" BeginTime="0:0:0.500" Duration="0:0:1" Storyboard.TargetProperty="Opacity" />
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </DataTrigger.EnterActions>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <Image Width="170" Height="170">
+                            <Image.Style>
+                                <Style TargetType="Image">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedItem.IsAvailable}" Value="True">
+                                            <Setter Property="Source" Value="Assets/android_green.png" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SelectedItem.IsAvailable}" Value="False">
+                                            <Setter Property="Source" Value="Assets/android_red.png" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                    </Grid>
+                    <TextBlock Margin="0,25" Foreground="#292826" FontFamily="Assets/#Segoe WP Light" TextAlignment="Center" HorizontalAlignment="Center">
+                        <Run Text="{Binding Path=SelectedItem.Name, Mode=OneWay}" FontSize="32" />
+                        <Span FontSize="12" BaselineAlignment="Center">
+                            <LineBreak />BATTERY: <Run Text="99%" FontFamily="Assets/#Segoe WP" /> FREE SPACE: <Run Text="2.1MB" FontFamily="Assets/#Segoe WP" />
+                        </Span>
+                    </TextBlock>
+                    <Image Source="Assets/right_round-48.png" Width="48" Height="48" />
+                </StackPanel>
+            </Grid>
+        </Grid>
+        
+        
+        
+        
+        <Grid Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="80" />
@@ -118,138 +292,7 @@
                     <RowDefinition />
                 </Grid.RowDefinitions>
                 <TextBlock Text="device manager" Margin="20" Foreground="#333333" FontSize="24" />
-                <ListView x:Name="DeviceList" Grid.Row="1" Padding="0" BorderThickness="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="DeviceList_SelectionChanged" SelectionMode="Single"
-                      ItemsSource="{Binding Items}">
-                    <ListView.Style>
-                        <Style TargetType="ListView">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListView">
-                                        <ScrollViewer>
-                                            <ItemsPresenter />
-                                        </ScrollViewer>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsGrouping" Value="True">
-                                                <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListView.Style>
-                    <ListBox.Resources>
-                        <Style TargetType="{x:Type GroupItem}">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type GroupItem}">
-                                        <StackPanel Margin="0,0,0,15">
-                                            <ContentPresenter />
-                                            <ItemsPresenter />
-                                        </StackPanel>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListBox.Resources>
-                    <ListView.GroupStyle>
-                        <GroupStyle>
-                            <GroupStyle.ContainerStyle>
-                                <Style TargetType="{x:Type GroupItem}">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate>
-                                                <Expander IsExpanded="True">
-                                                    <Expander.Style>
-                                                        <Style TargetType="Expander">
-                                                            <Setter Property="Template">
-                                                                <Setter.Value>
-                                                                    <ControlTemplate TargetType="Expander">
-                                                                        <Grid>
-                                                                            <Grid.RowDefinitions>
-                                                                                <RowDefinition Height="Auto" />
-                                                                                <RowDefinition Name="ContentRow" Height="0" />
-                                                                            </Grid.RowDefinitions>
-                                                                            <ToggleButton IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
-                                                                                <ToggleButton.Style>
-                                                                                    <Style TargetType="ToggleButton">
-                                                                                        <Setter Property="Cursor" Value="Hand" />
-                                                                                        <Setter Property="Template">
-                                                                                            <Setter.Value>
-                                                                                                <ControlTemplate TargetType="ToggleButton">
-                                                                                                    <Border Background="Transparent">
-                                                                                                        <ContentPresenter />
-                                                                                                    </Border>
-                                                                                                </ControlTemplate>
-                                                                                            </Setter.Value>
-                                                                                        </Setter>
-                                                                                    </Style>
-                                                                                </ToggleButton.Style>
-                                                                                <ContentPresenter ContentSource="Header" />
-                                                                            </ToggleButton>
-                                                                            <ContentPresenter Grid.Row="1" />
-                                                                        </Grid>
-                                                                        <ControlTemplate.Triggers>
-                                                                            <Trigger Property="IsExpanded" Value="True">
-                                                                                <Setter TargetName="ContentRow" Property="Height" Value="{Binding ElementName=Content,Path=DesiredHeight}" />
-                                                                            </Trigger>
-                                                                        </ControlTemplate.Triggers>
-                                                                    </ControlTemplate>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                        </Style>
-                                                    </Expander.Style>
-                                                    <Expander.Header>
-                                                        <Grid Background="{Binding Path=Name, Converter={StaticResource GroupColorConverter}}">
-                                                            <Border Padding="20,7" BorderThickness="0,0,0,2" BorderBrush="#33000000">
-                                                                <StackPanel>
-                                                                    <TextBlock Text="{Binding Path=Name, Converter={StaticResource GroupNameConverter}}" Foreground="White" FontSize="24" />
-                                                                    <TextBlock Text="{Binding Path=ItemCount, Converter={StaticResource DeviceCountConverter}}" Foreground="White" FontSize="10">
-                                                                        <TextBlock.RenderTransform>
-                                                                            <TranslateTransform Y="-3" />
-                                                                        </TextBlock.RenderTransform>
-                                                                    </TextBlock>
-                                                                </StackPanel>
-                                                            </Border>
-                                                        </Grid>
-                                                    </Expander.Header>
-                                                    <ItemsPresenter />
-                                                </Expander>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </GroupStyle.ContainerStyle>
-                        </GroupStyle>
-                    </ListView.GroupStyle>
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListBoxItem">
-                                        <Border x:Name="Border" Padding="20,10" Background="Transparent">
-                                            <StackPanel Orientation="Horizontal">
-                                                <Ellipse Name="AvailableEllipse" Margin="0,0,10,0" Fill="#c14747" Width="8" Height="8" VerticalAlignment="Center" />
-                                                <TextBlock Text="{Binding Path=Name, Converter={StaticResource StringToUpperConverter}}" FontSize="12" VerticalAlignment="Center" />
-                                            </StackPanel>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <DataTrigger Binding="{Binding IsAvailable}" Value="True">
-                                                <Setter TargetName="AvailableEllipse" Property="Fill" Value="#94c147" />
-                                            </DataTrigger>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Border" Property="Background" Value="#f8f8f8" />
-                                            </Trigger>
-                                            <Trigger Property="IsSelected" Value="True">
-                                                <Setter TargetName="Border" Property="Background" Value="#efefef" />
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListView.ItemContainerStyle>
-                </ListView>
+                
             </Grid>
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
@@ -295,5 +338,5 @@
                 </StackPanel>
             </Grid>
         </Grid>
-    </Border>
+    </Grid>
 </Window>

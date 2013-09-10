@@ -20,13 +20,18 @@ namespace FreeLeaf
         {
             if (e.AddedItems.Count > 0)
             {
-                UpdateActionIcon((DeviceItem)e.AddedItems[0]);
-                ActionGrid.IsEnabled = true;
+                model.SelectedItem = (DeviceItem)e.AddedItems[0];
+                model.SelectedItem.LastUpdated = 1;
+                model.SelectedItem.LastUpdated = 0;
+                //UpdateActionIcon((DeviceItem)e.AddedItems[0]);
+                //ActionGrid.IsEnabled = true;
+               // ColumnDeviceInfo.Width = new GridLength(400);
             }
             else
             {
-                UpdateActionIcon(null);
-                ActionGrid.IsEnabled = false;
+               // ColumnDeviceInfo.Width = new GridLength(0);
+                //UpdateActionIcon(null);
+                //ActionGrid.IsEnabled = false;
             }
         }
 
@@ -73,6 +78,12 @@ namespace FreeLeaf
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void PinButton_Click(object sender, RoutedEventArgs e)
+        {
+            var item = (sender as Button).DataContext as DeviceItem;
+            model.EditPinned(item, !item.IsPinned);
         }
     }
 }

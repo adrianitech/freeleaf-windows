@@ -1,0 +1,272 @@
+﻿<Window x:Class="FreeLeaf.TransferWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:model="clr-namespace:FreeLeaf.ViewModel"
+        DataContext="{Binding Path=Transfer, Source={StaticResource Locator}}"
+        Title="FreeLeaf - Transfer" Height="570" Width="960" MinHeight="570" MinWidth="960" WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True" Background="{x:Null}"
+        FontFamily="Assets/#Cantarell Regular" UseLayoutRounding="True">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="40" ResizeBorderThickness="15" />
+    </WindowChrome.WindowChrome>
+    
+    <Window.Resources>
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="#398328" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter />
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Foreground" Value="#333333" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="White" Margin="10">
+        <Border.Effect>
+            <DropShadowEffect ShadowDepth="0" BlurRadius="10" Color="Black" Opacity="0.4" />
+        </Border.Effect>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid WindowChrome.IsHitTestVisibleInChrome="True">
+                <TextBlock Margin="20,10,0,0" Text="FREELEAF - FILE TRANFERER" Foreground="#333333" FontSize="12" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource CaptionButtonStyle}" >
+                        <Image Source="Assets/minimize_window-9.png" Width="9" Height="9" />
+                    </Button>
+                    <Button Style="{StaticResource CaptionButtonStyle}" >
+                        <Image Source="Assets/maximize_window-9.png" Width="11" Height="9" />
+                    </Button>
+                    <Button Style="{StaticResource CaptionButtonStyle}" >
+                        <Image Source="Assets/close_window-9.png" Width="9" Height="9" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Row="1" Margin="20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="7" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="0,0,0,5" Orientation="Horizontal" HorizontalAlignment="Left">
+                    <TextBlock Foreground="#828282" FontSize="10">
+                        <Run Text="{Binding ElementName=LocalDriveList, Path=SelectedItems.Count, Mode=OneWay}" /> ITEM(S) SELECTED
+                    </TextBlock>
+                    <Button Margin="8,0,0,0" Content="DELETE SELECTED" Style="{StaticResource ActionButtonStyle}" />
+                    <Button Margin="8,0,0,0" Content="RENAME" Style="{StaticResource ActionButtonStyle}" />
+                    <Button Margin="8,0,0,0" Content="NEW FOLDER" Style="{StaticResource ActionButtonStyle}" />
+                    <Button Margin="8,0,0,0" Content="GO HOME" Style="{StaticResource ActionButtonStyle}" />
+                </StackPanel>
+                <Grid Grid.Row="1" Background="#fafafa">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ListView x:Name="LocalDriveList" ItemsSource="{Binding LocalDrive}" Background="{x:Null}" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              MouseDoubleClick="LocalDriveList_MouseDoubleClick">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListViewItem">
+                                            <Border Name="Border" Padding="20,10,25,10" Background="Transparent">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="16" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <CheckBox Name="CheckBox" VerticalAlignment="Center">
+                                                        <CheckBox.Style>
+                                                            <Style TargetType="CheckBox">
+                                                                <Setter Property="Width" Value="16" />
+                                                                <Setter Property="Height" Value="16" />
+                                                                <Setter Property="Template">
+                                                                    <Setter.Value>
+                                                                        <ControlTemplate TargetType="CheckBox">
+                                                                            <Border Padding="2" BorderThickness="2" BorderBrush="#333333" Background="Transparent">
+                                                                                <Rectangle Name="Check" Fill="#333333" Visibility="Hidden" />
+                                                                            </Border>
+                                                                            <ControlTemplate.Triggers>
+                                                                                <Trigger Property="IsChecked" Value="True">
+                                                                                    <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                                                                                </Trigger>
+                                                                            </ControlTemplate.Triggers>
+                                                                        </ControlTemplate>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </Style>
+                                                        </CheckBox.Style>
+                                                    </CheckBox>
+                                                    <Image Name="ImageType" Margin="10,0,0,0" Grid.Column="1" Source="Assets/folder-26.png" Width="26" Height="26" VerticalAlignment="Center" />
+                                                    <TextBlock Grid.Column="2" Margin="10,0" Text="{Binding Name}" Foreground="#333333" FontSize="14" TextTrimming="CharacterEllipsis" VerticalAlignment="Center">
+                                                        <TextBlock.RenderTransform>
+                                                            <TranslateTransform Y="1" />
+                                                        </TextBlock.RenderTransform>
+                                                    </TextBlock>
+                                                    <TextBlock Name="TextSize" Grid.Column="3" Text="{Binding Size}" Foreground="#333333" FontSize="12" VerticalAlignment="Center" Visibility="Collapsed">
+                                                        <TextBlock.RenderTransform>
+                                                            <TranslateTransform Y="1" />
+                                                        </TextBlock.RenderTransform>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="Border" Property="Background" Value="#f5f5f5" />
+                                                </Trigger>
+                                                <DataTrigger Binding="{Binding IsParent}" Value="True">
+                                                    <Setter TargetName="CheckBox" Property="Visibility" Value="Hidden" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsFolder}" Value="False">
+                                                    <Setter TargetName="ImageType" Property="Source" Value="Assets/file-26.png" />
+                                                    <Setter TargetName="TextSize" Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                    <Grid Grid.Row="1" Margin="20,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding LocalCurrentDir}" Foreground="#b6b6b6" FontSize="16" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                        <Button Grid.Column="1" VerticalAlignment="Center" Style="{StaticResource ActionButtonStyle}">
+                            <Image Source="Assets/right_circular-26.png" Width="26" Height="26" />
+                        </Button>
+                    </Grid>
+                </Grid>
+                <StackPanel Grid.Column="2" Margin="0,0,0,5" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="NEW FOLDER" Style="{StaticResource ActionButtonStyle}" />
+                    <Button Margin="8,0,0,0" Content="RENAME" Style="{StaticResource ActionButtonStyle}" />
+                    <Button Margin="8,0,0,0" Content="DELETE SELECTED" Style="{StaticResource ActionButtonStyle}" />
+                    <TextBlock Margin="8,0,0,0" Foreground="#828282" FontSize="10">
+                        <Run Text="{Binding ElementName=RemoteDriveList, Path=SelectedItems.Count, Mode=OneWay}" /> ITEM(S) SELECTED
+                    </TextBlock>
+                </StackPanel>
+                <Grid Grid.Row="1" Grid.Column="2" Background="#fafafa">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <ListView x:Name="RemoteDriveList" Background="{x:Null}" BorderThickness="0">
+                        <ListView.Items>
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                            <Border />
+                        </ListView.Items>
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListViewItem">
+                                            <CheckBox Margin="20,10,20,0" IsChecked="{Binding Path=IsSelected, Mode=TwoWay, RelativeSource={RelativeSource Mode=TemplatedParent}}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Image Source="Assets/folder-26.png" Width="26" Height="26" VerticalAlignment="Center" />
+                                                    <TextBlock Margin="5,0,0,0" Text="Parent folder" Foreground="#333333" FontSize="16" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </CheckBox>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                    </ListView>
+                    <Grid Grid.Row="1" Margin="20,10">
+                        <Button VerticalAlignment="Center" HorizontalAlignment="Left" Style="{StaticResource ActionButtonStyle}">
+                            <Image Source="Assets/left_circular-26.png" Width="26" Height="26" />
+                        </Button>
+                        <TextBlock Text="YOUR DEVICE" Foreground="#b6b6b6" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    </Grid>
+                </Grid>
+                <GridSplitter Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Blue">
+                    <GridSplitter.Style>
+                        <Style TargetType="GridSplitter">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="GridSplitter">
+                                        <Grid Background="#fafafa">
+                                            <Rectangle Width="1" Fill="#cdcfd1" />
+                                        </Grid>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GridSplitter.Style>
+                </GridSplitter>
+            </Grid>
+            <Border Grid.Row="2" Padding="20,15" Background="#f5f7fa" BorderThickness="0,1,0,0" BorderBrush="#cdcfd1">
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Foreground="#333333" FontSize="16">
+                        ACTIVE TRANSFER (<Run Text="45" />%)
+                    </TextBlock>
+                    <TextBlock Margin="0,5,0,0" Foreground="#333333" FontSize="12">
+                        CURRENT FILE (<Run Text="88" />%)
+                    </TextBlock>
+                    <TextBlock Foreground="#333333" FontSize="12">
+                        <Run Text="Lady Gaga - Telephone.mp3" Foreground="#398328" /> to 
+                        <Run Text="sdcard/Downloads/Music" Foreground="#398328" />
+                    </TextBlock>
+                    <ProgressBar Margin="0,8,0,0" Height="4" Width="200" Value="26" HorizontalAlignment="Left">
+                        <ProgressBar.Style>
+                            <Style TargetType="ProgressBar">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ProgressBar">
+                                            <Grid>
+                                                <Border Name="PART_Track" Background="#cdcfd1" />
+                                                <Border Name="PART_Indicator" Background="#333333" HorizontalAlignment="Left" />
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </ProgressBar.Style>
+                    </ProgressBar>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

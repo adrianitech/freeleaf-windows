@@ -53,6 +53,19 @@ namespace FreeLeaf.ViewModel
             items = new ObservableCollection<DeviceItem>();
             view = (CollectionView)CollectionViewSource.GetDefaultView(items);
 
+            for (int i = 0; i < 20; i++)
+            {
+                items.Add(new DeviceItem()
+                {
+                    ID = i + "da",
+                    Username = "Adrian",
+                    Device = "Nexus 4",
+                    IsAvailable = true,
+                    IsPinned = i % 2 == 0
+                });
+            }
+
+
             try
             {
                 var json = File.ReadAllText("D:/pinned.txt");
@@ -78,11 +91,11 @@ namespace FreeLeaf.ViewModel
 
             if (IsInDesignMode) return;
 
-            udpClient = new UdpClient(8888);
-            udpClient.BeginReceive(new AsyncCallback(ReceiveDeviceInfo), null);
+           // udpClient = new UdpClient(8888);
+           // udpClient.BeginReceive(new AsyncCallback(ReceiveDeviceInfo), null);
 
             //new Thread(ReceiveDeviceInfo).Start();
-            new Thread(CheckDeviceAvailability).Start();
+           // new Thread(CheckDeviceAvailability).Start();
         }
 
         private void CheckDeviceAvailability()

@@ -43,6 +43,7 @@ namespace FreeLeaf.ViewModel
             ////}
 
             SimpleIoc.Default.Register<MainViewModel>();
+            SimpleIoc.Default.Register<TransferViewModel>();
         }
 
         public MainViewModel Main
@@ -50,6 +51,14 @@ namespace FreeLeaf.ViewModel
             get
             {
                 return ServiceLocator.Current.GetInstance<MainViewModel>();
+            }
+        }
+
+        public TransferViewModel Transfer
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<TransferViewModel>();
             }
         }
         

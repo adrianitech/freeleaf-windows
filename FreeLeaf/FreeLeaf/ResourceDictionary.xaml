@@ -98,14 +98,14 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
-                    <Border Name="Border" CornerRadius="4" Background="Black" />
+                    <Border Name="Border" Background="#dc4323" />
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
     <ControlTemplate x:Key="VerticalScrollBar" TargetType="{x:Type ScrollBar}">
-        <Grid>
+        <Grid Background="Transparent">
             <Track Name="PART_Track" IsDirectionReversed="True">
                 <Track.Thumb>
                     <Thumb Style="{StaticResource ScrollBarThumb}" />
@@ -115,7 +115,7 @@
     </ControlTemplate>
 
     <ControlTemplate x:Key="HorizontalScrollBar" TargetType="{x:Type ScrollBar}">
-        <Grid>
+        <Grid Background="Transparent">
             <Track Name="PART_Track" IsDirectionReversed="False">
                 <Track.Thumb>
                     <Thumb Style="{StaticResource ScrollBarThumb}" />
@@ -125,20 +125,42 @@
     </ControlTemplate>
 
     <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}">
-        <Setter Property="SnapsToDevicePixels" Value="True"/>
-        <Setter Property="OverridesDefaultStyle" Value="true"/>
-        <Setter Property="Opacity" Value="0.2" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
         <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Opacity" Value="0.5" />
-            </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="Orientation" Value="Horizontal" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Height" Value="8" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="Orientation" Value="Vertical" />
+                    <Condition Property="IsMouseOver" Value="True" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Width" Value="8" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="Orientation" Value="Horizontal" />
+                    <Condition Property="IsMouseOver" Value="False" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Height" Value="4" />
+            </MultiTrigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="Orientation" Value="Vertical" />
+                    <Condition Property="IsMouseOver" Value="False" />
+                </MultiTrigger.Conditions>
+                <Setter Property="Width" Value="4" />
+            </MultiTrigger>
             <Trigger Property="Orientation" Value="Horizontal">
                 <Setter Property="Width" Value="Auto"/>
-                <Setter Property="Height" Value="8" />
                 <Setter Property="Template" Value="{StaticResource HorizontalScrollBar}" />
             </Trigger>
             <Trigger Property="Orientation" Value="Vertical">
-                <Setter Property="Width" Value="8" />
                 <Setter Property="Height" Value="Auto" />
                 <Setter Property="Template" Value="{StaticResource VerticalScrollBar}" />
             </Trigger>
@@ -152,10 +174,10 @@
                     <Grid>
                         <ScrollContentPresenter Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
                                                 CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}" />
-                        <ScrollBar x:Name="PART_VerticalScrollBar" Minimum="0" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" HorizontalAlignment="Right" Margin="0,5,5,5"
+                        <ScrollBar x:Name="PART_VerticalScrollBar" Minimum="0" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" HorizontalAlignment="Left"
                                    ViewportSize="{TemplateBinding ScrollViewer.ViewportHeight}" Value="{Binding Path=VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" 
                                    Visibility="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" />
-                        <ScrollBar x:Name="PART_HorizontalScrollBar" Minimum="0" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="5,0,5,5"
+                        <ScrollBar x:Name="PART_HorizontalScrollBar" Minimum="0" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" Orientation="Horizontal" VerticalAlignment="Bottom"
                                    ViewportSize="{TemplateBinding ScrollViewer.ViewportWidth}" Value="{Binding Path=HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                    Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" Cursor="Arrow" AutomationProperties.AutomationId="HorizontalScrollBar" />
                     </Grid>
