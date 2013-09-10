@@ -116,9 +116,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Resource Include="Assets\Cantarell-Regular.ttf" />
     <Resource Include="Assets\SegoeWP-Light.ttf" />
-    <Resource Include="Assets\SegoeWP-Semibold.ttf" />
     <Resource Include="Assets\SegoeWP.ttf" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -126,83 +124,27 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <Resource Include="Assets\micro_sd-26.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\full_battery-26.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Assets\android_green.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\right_circular-26.png" />
+    <Resource Include="Assets\star_filled.png" />
+    <Resource Include="Assets\star_outlined.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\delete-26.png" />
+    <Resource Include="Assets\android_gray.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\android-26.png" />
+    <Resource Include="Assets\right_arrow.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Assets\star-26.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\refresh-26.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\android_red.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\settings-26.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\checkmark-26.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\wifi-26.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\close_window-9.png" />
-    <Resource Include="Assets\minimize_window-9.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\maximize_window-9.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\left_circular-26.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\folder-26.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\file-26.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\close_window-14.png" />
-    <Resource Include="Assets\maximize_window-14.png" />
-    <Resource Include="Assets\minimize_window-14.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\outline_star-26.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\outline_star-16.png" />
-    <Resource Include="Assets\star-16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\right_round-48.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\battery.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\wifi.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Assets\storage.png" />
+    <Resource Include="Assets\close.png" />
+    <Resource Include="Assets\maximize.png" />
+    <Resource Include="Assets\minimize.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

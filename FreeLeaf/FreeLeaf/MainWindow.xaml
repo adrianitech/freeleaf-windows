@@ -30,21 +30,21 @@
                 <ColumnDefinition Width="300" />
                 <ColumnDefinition x:Name="ColumnDeviceInfo" Width="400" />
             </Grid.ColumnDefinitions>
-            <Grid Background="#f6f5f1">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="60" />
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-                <Border Grid.RowSpan="3" BorderThickness="0,0,1,0" BorderBrush="#e7e7e5" />
+                <Border Grid.RowSpan="3" Background="#f6f5f1" BorderThickness="0,0,1,0" BorderBrush="#e7e7e5" />
                 <Grid>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,30,30,0">
-                        <Image Source="Assets/minimize_window-14.png" Width="14" Height="14" />
-                        <Image Margin="20,0,0,0" Source="Assets/maximize_window-14.png" Width="16" Height="14" />
-                        <Image Source="Assets/close_window-14.png" Width="14" Height="14" Margin="20,0,0,0" />
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True" Margin="0,20,20,0">
+                        <Image Source="Assets/minimize.png" Width="11" Height="11" />
+                        <Image Margin="15,0,0,0" Source="Assets/maximize.png" Width="13" Height="11" />
+                        <Image Source="Assets/close.png" Width="11" Height="11" Margin="15,0,0,0" />
                     </StackPanel>
                 </Grid>
-                <ListView x:Name="DeviceList" Grid.Row="1" Padding="0" BorderThickness="0" Margin="0,20,0,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="DeviceList_SelectionChanged" SelectionMode="Single"
+                <ListView x:Name="DeviceList" Grid.Row="1" Padding="0" SelectedItem="{Binding Path=SelectedItem, Mode=TwoWay}" BorderThickness="0" Margin="0,20,0,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionMode="Single"
                       ItemsSource="{Binding Items}">
                     <ListView.Style>
                         <Style TargetType="ListView">
@@ -68,8 +68,8 @@
                         <Style TargetType="{x:Type GroupItem}">
                             <Setter Property="Template">
                                 <Setter.Value>
-                                    <ControlTemplate TargetType="{x:Type GroupItem}">
-                                        <StackPanel Margin="0,0,0,20">
+                                    <ControlTemplate TargetType="GroupItem">
+                                        <StackPanel Margin="0,0,0,10">
                                             <ContentPresenter />
                                             <ItemsPresenter />
                                         </StackPanel>
@@ -94,7 +94,7 @@
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
-                                        <Border Name="Border" Padding="25,0,25,0" Height="40" Background="Transparent" BorderThickness="0,1">
+                                        <Border Name="Border" Padding="25,0,25,0" Height="42" Background="Transparent" BorderThickness="0,1">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
@@ -103,16 +103,35 @@
                                                 </Grid.ColumnDefinitions>
                                                 <Ellipse Name="AvailableEllipse" Fill="#b2b2b2" Width="9" Height="9" VerticalAlignment="Center" />
                                                 <TextBlock Grid.Column="1" Margin="10,0" Text="{Binding Name}" Foreground="#424242" FontSize="14" FontFamily="Assets/#Segoe WP" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                                <Button Name="PinButton" Grid.Column="2" Width="16" Height="16" VerticalAlignment="Center" Visibility="Collapsed" Click="PinButton_Click" />
+                                                <Button Name="PinButton" Grid.Column="2" Width="16" Height="16" VerticalAlignment="Center" Visibility="Collapsed" Click="PinButton_Click">
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Cursor" Value="Hand" />
+                                                            <Setter Property="Template">
+                                                                <Setter.Value>
+                                                                    <ControlTemplate TargetType="Button">
+                                                                        <Grid Background="Transparent">
+                                                                            <ContentPresenter />
+                                                                        </Grid>
+                                                                    </ControlTemplate>
+                                                                </Setter.Value>
+                                                            </Setter>
+                                                        </Style>
+                                                    </Button.Style>
+                                                    <Image Name="PinImage" Source="Assets/star_outlined.png" Width="16" Height="16" />
+                                                </Button>
                                             </Grid>
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <DataTrigger Binding="{Binding IsAvailable}" Value="True">
                                                 <Setter TargetName="AvailableEllipse" Property="Fill" Value="#81ac40" />
                                             </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                                <Setter TargetName="PinImage" Property="Source" Value="Assets/star_filled.png" />
+                                            </DataTrigger>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Border" Property="Background" Value="#faf9f7" />
-                                                <Setter TargetName="Border" Property="BorderBrush" Value="#faf9f7" />
+                                                <Setter TargetName="Border" Property="Background" Value="#66FFFFFF" />
+                                                <Setter TargetName="Border" Property="BorderBrush" Value="#66FFFFFF" />
                                                 <Setter TargetName="PinButton" Property="Visibility" Value="Visible" />
                                             </Trigger>
                                             <Trigger Property="IsSelected" Value="True">
@@ -126,14 +145,21 @@
                         </Style>
                     </ListView.ItemContainerStyle>
                 </ListView>
-                <TextBox Grid.Row="2" Margin="25,15">
+                <TextBox Grid.Row="2" Margin="25,15" TextChanged="TextBoxSearch_TextChanged">
                     <TextBox.Style>
                         <Style TargetType="TextBox">
+                            <Setter Property="Foreground" Value="#292826" />
+                            <Setter Property="FontFamily" Value="Assets/#Segoe WP" />
+                            <Setter Property="FontSize" Value="14" />
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="TextBox">
                                         <Border Padding="10,5" BorderThickness="1" BorderBrush="#e7e7e5" Background="White">
-                                            <ScrollViewer x:Name="PART_ContentHost" />
+                                            <Grid>
+                                                <TextBlock Name="Watermark" Text="Search for device or ip address" Foreground="{Binding Foreground}" FontFamily="{TemplateBinding FontFamily}" FontSize="{TemplateBinding FontSize}" FontStyle="Italic" Opacity="0.3"
+                                                           Visibility="{Binding Path=Text.IsEmpty, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                                <ScrollViewer x:Name="PART_ContentHost" />
+                                            </Grid>
                                         </Border>
                                     </ControlTemplate>
                                 </Setter.Value>
@@ -142,7 +168,7 @@
                     </TextBox.Style>
                 </TextBox>
             </Grid>
-            <Grid Grid.Column="1" ClipToBounds="True">
+            <Grid Grid.Column="1" ClipToBounds="True" Visibility="{Binding Path=SelectedItem, Converter={StaticResource NullToVisibilityConverter}}">
                 <StackPanel VerticalAlignment="Center">
                     <Grid>
                         <Ellipse Fill="#d3f696" StrokeThickness="1" Stroke="#b1df63" Width="100" Height="100">
@@ -174,167 +200,25 @@
                             <Image.Style>
                                 <Style TargetType="Image">
                                     <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedItem.IsAvailable}" Value="False">
+                                            <Setter Property="Source" Value="Assets/android_gray.png" />
+                                        </DataTrigger>
                                         <DataTrigger Binding="{Binding SelectedItem.IsAvailable}" Value="True">
                                             <Setter Property="Source" Value="Assets/android_green.png" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding SelectedItem.IsAvailable}" Value="False">
-                                            <Setter Property="Source" Value="Assets/android_red.png" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Image.Style>
                         </Image>
                     </Grid>
-                    <TextBlock Margin="0,25" Foreground="#292826" FontFamily="Assets/#Segoe WP Light" TextAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Margin="0,25" Foreground="#292826" FontFamily="Assets/#Segoe WP Light" TextAlignment="Center" HorizontalAlignment="Center" LineHeight="22">
                         <Run Text="{Binding Path=SelectedItem.Name, Mode=OneWay}" FontSize="32" />
-                        <Span FontSize="12" BaselineAlignment="Center">
-                            <LineBreak />BATTERY: <Run Text="99%" FontFamily="Assets/#Segoe WP" /> FREE SPACE: <Run Text="2.1MB" FontFamily="Assets/#Segoe WP" />
+                        <Span FontSize="13" BaselineAlignment="Center">
+                            <LineBreak />BATTERY: <Run Text="{Binding SelectedItem.Battery}" FontFamily="Assets/#Segoe WP" /> FREE SPACE: <Run Text="{Binding SelectedItem.Storage}" FontFamily="Assets/#Segoe WP" />
+                            <LineBreak />IP ADDRESS: <Run Text="{Binding SelectedItem.Address}" FontFamily="Assets/#Segoe WP" />
                         </Span>
                     </TextBlock>
-                    <Image Source="Assets/right_round-48.png" Width="48" Height="48" />
-                </StackPanel>
-            </Grid>
-        </Grid>
-        
-        
-        
-        
-        <Grid Visibility="Collapsed">
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition Height="80" />
-            </Grid.RowDefinitions>
-            <Grid>
-                <Grid>
-                    <TextBlock Text="Please select a device" FontSize="16" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                </Grid>
-                <Grid Background="White" Visibility="{Binding Path=SelectedItem, Converter={StaticResource NullToVisibilityConverter}}" ClipToBounds="True">
-                    <StackPanel VerticalAlignment="Center">
-                        <Grid>
-                            <Ellipse Fill="#d3f696" StrokeThickness="1" Stroke="#b1df63" Width="100" Height="100">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
-                                        <Setter Property="RenderTransform">
-                                            <Setter.Value>
-                                                <ScaleTransform />
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding SelectedItem.LastUpdated}" Value="0">
-                                                <DataTrigger.EnterActions>
-                                                    <BeginStoryboard>
-                                                        <Storyboard>
-                                                            <DoubleAnimation From="0" To="4" Duration="0:0:1.500" Storyboard.TargetProperty="RenderTransform.ScaleX" />
-                                                            <DoubleAnimation From="0" To="4" Duration="0:0:1.500" Storyboard.TargetProperty="RenderTransform.ScaleY" />
-                                                            <DoubleAnimation From="1" To="0" Duration="0:0:1.500" Storyboard.TargetProperty="Opacity" />
-                                                        </Storyboard>
-                                                    </BeginStoryboard>
-                                                </DataTrigger.EnterActions>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-                            <Image Width="165" Height="165">
-                                <Image.Style>
-                                    <Style TargetType="Image">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding SelectedItem.IsAvailable}" Value="True">
-                                                <Setter Property="Source" Value="Assets/android_green.png" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding SelectedItem.IsAvailable}" Value="False">
-                                                <Setter Property="Source" Value="Assets/android_red.png" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Image.Style>
-                            </Image>
-                        </Grid>
-                        <TextBlock Margin="0,25" Text="{Binding SelectedItem.Name}" FontSize="18" HorizontalAlignment="Center" />
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Grid Width="70">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="26" />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <Image Source="Assets/full_battery-26.png" Width="26" Height="26" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Row="1" Margin="0,5,0,0" Text="{Binding SelectedItem.Battery}" Foreground="#333333" FontSize="12" HorizontalAlignment="Center" />
-                            </Grid>
-                            <Grid Width="70">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="26" />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <Image Source="Assets/micro_sd-26.png" Width="26" Height="26" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Row="1" Margin="0,5,0,0" Text="{Binding SelectedItem.Storage}" Foreground="#333333" FontSize="12" HorizontalAlignment="Center" />
-                            </Grid>
-                            <Grid Width="70">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="26" />
-                                    <RowDefinition />
-                                </Grid.RowDefinitions>
-                                <Image Source="Assets/wifi-26.png" Width="26" Height="26" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Row="1" Margin="0,5,0,0" Text="{Binding SelectedItem.Wifi}" Foreground="#333333" FontSize="12" HorizontalAlignment="Center" />
-                            </Grid>
-                        </StackPanel>
-                    </StackPanel>
-                </Grid>
-                <Grid Background="White" Visibility="{Binding ElementName=ShowSettingsButton, Path=IsChecked, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <StackPanel>
-                        <TextBlock Text="settings" Margin="20" Foreground="#333333" FontSize="24" />
-                    </StackPanel>
-                </Grid>
-            </Grid>
-            <Grid x:Name="DeviceManager" Background="White" Visibility="{Binding ElementName=ShowManagerButton, Path=IsChecked, Converter={StaticResource BoolToVisibilityConverter}}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition />
-                </Grid.RowDefinitions>
-                <TextBlock Text="device manager" Margin="20" Foreground="#333333" FontSize="24" />
-                
-            </Grid>
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="2*" />
-                </Grid.ColumnDefinitions>
-                <ToggleButton x:Name="ShowManagerButton" Style="{StaticResource FlatToggleButtonStyle}">
-                    <Image Source="Assets/android-26.png" Width="26" Height="26" />
-                </ToggleButton>
-                <Grid Grid.Column="1" Visibility="{Binding ElementName=ShowManagerButton, Path=IsChecked, Converter={StaticResource BoolToVisibilityNegateConverter}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <ToggleButton x:Name="ShowSettingsButton" Style="{StaticResource FlatToggleButtonStyle}" BorderThickness="1,1,1,0">
-                        <Image Source="Assets/settings-26.png" Width="26" Height="26" />
-                    </ToggleButton>
-                    <Button IsEnabled="{Binding Path=SelectedItem.IsAvailable, FallbackValue=False}" Grid.Column="1" Style="{StaticResource FlatButtonStyle}">
-                        <Image Source="Assets/right_circular-26.png" Width="26" Height="26" />
-                    </Button>
-                </Grid>
-                <Grid x:Name="ActionGrid" IsEnabled="False" Grid.Column="1" Visibility="{Binding ElementName=ShowManagerButton, Path=IsChecked, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Button Style="{StaticResource FlatButtonStyle}" BorderThickness="1,1,1,0" Click="ActionButton_Click">
-                        <Image x:Name="ActionImage" Source="Assets/star-26.png" Width="26" Height="26" />
-                    </Button>
-                    <Button Grid.Column="1" Style="{StaticResource FlatButtonStyle}" Click="SelectButton_Click">
-                        <Image Source="Assets/checkmark-26.png" Width="26" Height="26" />
-                    </Button>
-                </Grid>
-            </Grid>
-            <Grid Height="30" VerticalAlignment="Top" WindowChrome.IsHitTestVisibleInChrome="True">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Style="{StaticResource CaptionButtonStyle}" Click="MinimizeButton_Click">
-                        <Image Source="Assets/minimize_window-9.png" Width="9" Height="9" />
-                    </Button>
-                    <Button Style="{StaticResource CaptionButtonStyle}" Click="CloseButton_Click">
-                        <Image Source="Assets/close_window-9.png" Width="9" Height="9" />
-                    </Button>
+                    <Image Source="Assets/right_arrow.png" Width="48" Height="48" />
                 </StackPanel>
             </Grid>
         </Grid>

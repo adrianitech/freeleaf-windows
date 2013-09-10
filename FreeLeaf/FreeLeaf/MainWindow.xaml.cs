@@ -1,8 +1,6 @@
 ﻿using FreeLeaf.ViewModel;
-using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
 
 namespace FreeLeaf
 {
@@ -16,58 +14,10 @@ namespace FreeLeaf
             model = (MainViewModel)DataContext;
         }
 
-        private void DeviceList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void PinButton_Click(object sender, RoutedEventArgs e)
         {
-            if (e.AddedItems.Count > 0)
-            {
-                model.SelectedItem = (DeviceItem)e.AddedItems[0];
-                model.SelectedItem.LastUpdated = 1;
-                model.SelectedItem.LastUpdated = 0;
-                //UpdateActionIcon((DeviceItem)e.AddedItems[0]);
-                //ActionGrid.IsEnabled = true;
-               // ColumnDeviceInfo.Width = new GridLength(400);
-            }
-            else
-            {
-               // ColumnDeviceInfo.Width = new GridLength(0);
-                //UpdateActionIcon(null);
-                //ActionGrid.IsEnabled = false;
-            }
-        }
-
-        private void UpdateActionIcon(DeviceItem item)
-        {
-            if (item != null && item.IsPinned)
-            {
-                ActionImage.Source = new BitmapImage(new Uri("Assets/delete-26.png", UriKind.Relative));
-            }
-            else
-            {
-                ActionImage.Source = new BitmapImage(new Uri("Assets/star-26.png", UriKind.Relative));
-            }
-        }
-
-        private void ActionButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (DeviceList.SelectedItem != null)
-            {
-                var item = (DeviceItem)DeviceList.SelectedItem;
-                model.EditPinned(item, !item.IsPinned);
-
-                if (DeviceList.SelectedItem != null)
-                {
-                    UpdateActionIcon((DeviceItem)DeviceList.SelectedItem);
-                }
-            }
-        }
-
-        private void SelectButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (DeviceList.SelectedItem != null)
-            {
-                model.SelectedItem = (DeviceItem)DeviceList.SelectedItem;
-                ShowManagerButton.IsChecked = false;
-            }
+            var item = (sender as Button).DataContext as DeviceItem;
+            model.EditPinned(item, !item.IsPinned);
         }
 
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
@@ -80,10 +30,9 @@ namespace FreeLeaf
             this.Close();
         }
 
-        private void PinButton_Click(object sender, RoutedEventArgs e)
+        private void TextBoxSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var item = (sender as Button).DataContext as DeviceItem;
-            model.EditPinned(item, !item.IsPinned);
+            model.SearchDevice((sender as TextBox).Text);
         }
     }
 }

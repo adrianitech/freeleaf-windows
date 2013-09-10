@@ -53,7 +53,7 @@ namespace FreeLeaf.ViewModel
             items = new ObservableCollection<DeviceItem>();
             view = (CollectionView)CollectionViewSource.GetDefaultView(items);
 
-            for (int i = 0; i < 20; i++)
+            /*for (int i = 0; i < 20; i++)
             {
                 items.Add(new DeviceItem()
                 {
@@ -63,7 +63,7 @@ namespace FreeLeaf.ViewModel
                     IsAvailable = true,
                     IsPinned = i % 2 == 0
                 });
-            }
+            }*/
 
 
             try
@@ -91,11 +91,26 @@ namespace FreeLeaf.ViewModel
 
             if (IsInDesignMode) return;
 
-           // udpClient = new UdpClient(8888);
-           // udpClient.BeginReceive(new AsyncCallback(ReceiveDeviceInfo), null);
+            udpClient = new UdpClient(8888);
+            udpClient.BeginReceive(new AsyncCallback(ReceiveDeviceInfo), null);
 
             //new Thread(ReceiveDeviceInfo).Start();
-           // new Thread(CheckDeviceAvailability).Start();
+            new Thread(CheckDeviceAvailability).Start();
+        }
+
+        public void SearchDevice(string query)
+        {
+            query = query.ToLower();
+            if (string.IsNullOrEmpty(query))
+            {
+                view.Filter = null;
+                return;
+            }
+            view.Filter = new Predicate<object>((o) =>
+            {
+                var item = (DeviceItem)o;
+                return item.Name.ToLower().Contains(query) || item.Address.Contains(query);
+            });
         }
 
         private void CheckDeviceAvailability()
