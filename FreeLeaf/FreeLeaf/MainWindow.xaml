@@ -3,12 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:model="clr-namespace:FreeLeaf.ViewModel"
         DataContext="{Binding Path=Main, Source={StaticResource Locator}}"
-        Title="FreeLeaf" Height="470" SizeToContent="Width" WindowStartupLocation="CenterScreen"
-        WindowStyle="None" AllowsTransparency="True" Background="{x:Null}" ResizeMode="CanResize"
+        Title="FreeLeaf" Width="700" Height="470" WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True" Background="{x:Null}" ResizeMode="CanMinimize"
         FontFamily="Assets/#Segoe WP" UseLayoutRounding="True">
     
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="40" />
+        <WindowChrome CaptionHeight="50" />
     </WindowChrome.WindowChrome>
     
     <Window.Resources>
@@ -28,7 +28,7 @@
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300" />
-                <ColumnDefinition x:Name="ColumnDeviceInfo" Width="400" />
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid>
                 <Grid.RowDefinitions>
@@ -39,12 +39,15 @@
                 <Border Grid.RowSpan="3" Background="#f6f5f1" BorderThickness="0,0,1,0" BorderBrush="#e7e7e5" />
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True" Margin="0,20,20,0">
-                        <Image Source="Assets/minimize.png" Width="11" Height="11" />
-                        <Image Margin="15,0,0,0" Source="Assets/maximize.png" Width="13" Height="11" />
-                        <Image Source="Assets/close.png" Width="11" Height="11" Margin="15,0,0,0" />
+                        <Button Style="{StaticResource SimpleButtonStyle}" Click="MinimizeButton_Click">
+                            <Image Source="Assets/minimize.png" Width="11" Height="11" />
+                        </Button>
+                        <Button Margin="15,0,0,0" Style="{StaticResource SimpleButtonStyle}" Click="CloseButton_Click">
+                            <Image Source="Assets/close.png" Width="11" Height="11" />
+                        </Button>
                     </StackPanel>
                 </Grid>
-                <ListView x:Name="DeviceList" Grid.Row="1" Padding="0" SelectedItem="{Binding Path=SelectedItem, Mode=TwoWay}" BorderThickness="0" Margin="0,20,0,0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionMode="Single"
+                <ListView x:Name="DeviceList" Grid.Row="1" Padding="0" SelectedItem="{Binding Path=SelectedItem, Mode=TwoWay}" BorderThickness="0" Margin="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionMode="Single"
                       ItemsSource="{Binding Items}">
                     <ListView.Style>
                         <Style TargetType="ListView">
@@ -103,21 +106,7 @@
                                                 </Grid.ColumnDefinitions>
                                                 <Ellipse Name="AvailableEllipse" Fill="#b2b2b2" Width="9" Height="9" VerticalAlignment="Center" />
                                                 <TextBlock Grid.Column="1" Margin="10,0" Text="{Binding Name}" Foreground="#424242" FontSize="14" FontFamily="Assets/#Segoe WP" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                                <Button Name="PinButton" Grid.Column="2" Width="16" Height="16" VerticalAlignment="Center" Visibility="Collapsed" Click="PinButton_Click">
-                                                    <Button.Style>
-                                                        <Style TargetType="Button">
-                                                            <Setter Property="Cursor" Value="Hand" />
-                                                            <Setter Property="Template">
-                                                                <Setter.Value>
-                                                                    <ControlTemplate TargetType="Button">
-                                                                        <Grid Background="Transparent">
-                                                                            <ContentPresenter />
-                                                                        </Grid>
-                                                                    </ControlTemplate>
-                                                                </Setter.Value>
-                                                            </Setter>
-                                                        </Style>
-                                                    </Button.Style>
+                                                <Button Name="PinButton" Grid.Column="2" Width="16" Height="16" VerticalAlignment="Center" Visibility="Collapsed" Style="{StaticResource SimpleButtonStyle}" Click="PinButton_Click">
                                                     <Image Name="PinImage" Source="Assets/star_outlined.png" Width="16" Height="16" />
                                                 </Button>
                                             </Grid>
@@ -150,13 +139,13 @@
                         <Style TargetType="TextBox">
                             <Setter Property="Foreground" Value="#292826" />
                             <Setter Property="FontFamily" Value="Assets/#Segoe WP" />
-                            <Setter Property="FontSize" Value="14" />
+                            <Setter Property="FontSize" Value="12" />
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="TextBox">
-                                        <Border Padding="10,5" BorderThickness="1" BorderBrush="#e7e7e5" Background="White">
+                                        <Border Padding="10,7" BorderThickness="1" BorderBrush="#e7e7e5" Background="White">
                                             <Grid>
-                                                <TextBlock Name="Watermark" Text="Search for device or ip address" Foreground="{Binding Foreground}" FontFamily="{TemplateBinding FontFamily}" FontSize="{TemplateBinding FontSize}" FontStyle="Italic" Opacity="0.3"
+                                                <TextBlock Name="Watermark" Text="Search for device or ip address..." Foreground="{Binding Foreground}" FontFamily="{TemplateBinding FontFamily}" FontSize="{TemplateBinding FontSize}" FontStyle="Italic" Opacity="0.4"
                                                            Visibility="{Binding Path=Text.IsEmpty, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}"/>
                                                 <ScrollViewer x:Name="PART_ContentHost" />
                                             </Grid>
@@ -211,14 +200,16 @@
                             </Image.Style>
                         </Image>
                     </Grid>
-                    <TextBlock Margin="0,25" Foreground="#292826" FontFamily="Assets/#Segoe WP Light" TextAlignment="Center" HorizontalAlignment="Center" LineHeight="22">
-                        <Run Text="{Binding Path=SelectedItem.Name, Mode=OneWay}" FontSize="32" />
-                        <Span FontSize="13" BaselineAlignment="Center">
-                            <LineBreak />BATTERY: <Run Text="{Binding SelectedItem.Battery}" FontFamily="Assets/#Segoe WP" /> FREE SPACE: <Run Text="{Binding SelectedItem.Storage}" FontFamily="Assets/#Segoe WP" />
-                            <LineBreak />IP ADDRESS: <Run Text="{Binding SelectedItem.Address}" FontFamily="Assets/#Segoe WP" />
-                        </Span>
+                    <TextBlock Margin="0,25,0,5" Text="{Binding SelectedItem.Name}" Foreground="#323232" FontSize="32" FontFamily="Assets/#Segoe WP Light" HorizontalAlignment="Center" />
+                    <TextBlock Margin="0,0,0,25" Foreground="#4b4b4b" FontSize="11" FontFamily="Assets/#Segoe WP" TextAlignment="Center" HorizontalAlignment="Center" LineHeight="16">
+                        BATTERY: <Run Text="{Binding SelectedItem.Battery}" />
+                        FREE SPACE: <Run Text="{Binding SelectedItem.Storage}" />
+                        <LineBreak />
+                        IP ADDRESS: <Run Text="{Binding SelectedItem.Address}" />
                     </TextBlock>
-                    <Image Source="Assets/right_arrow.png" Width="48" Height="48" />
+                    <Button HorizontalAlignment="Center" Style="{StaticResource SimpleButtonStyle}" Click="ButtonGo_Click">
+                        <Image Source="Assets/right_arrow.png" Width="36" Height="36" />
+                    </Button>
                 </StackPanel>
             </Grid>
         </Grid>

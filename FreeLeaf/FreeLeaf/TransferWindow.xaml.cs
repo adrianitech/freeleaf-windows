@@ -19,7 +19,7 @@ namespace FreeLeaf
     {
         private TransferViewModel model;
 
-        public TransferWindow()
+        public TransferWindow(DeviceItem item)
         {
             InitializeComponent();
             model = (TransferViewModel)DataContext;

@@ -20,6 +20,19 @@ namespace FreeLeaf
             model.EditPinned(item, !item.IsPinned);
         }
 
+        private void TextBoxSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            model.SearchDevice((sender as TextBox).Text);
+        }
+
+        private void ButtonGo_Click(object sender, RoutedEventArgs e)
+        {
+            this.Hide();
+            TransferWindow transfer = new TransferWindow(model.SelectedItem);
+            transfer.Closing += (sender1, e1) => { this.Show(); };
+            transfer.Show();
+        }
+
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = System.Windows.WindowState.Minimized;
@@ -28,11 +41,6 @@ namespace FreeLeaf
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
-        }
-
-        private void TextBoxSearch_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            model.SearchDevice((sender as TextBox).Text);
         }
     }
 }
