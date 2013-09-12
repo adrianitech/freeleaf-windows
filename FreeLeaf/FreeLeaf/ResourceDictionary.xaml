@@ -124,22 +124,40 @@
 
     <ControlTemplate x:Key="VerticalScrollBar" TargetType="{x:Type ScrollBar}">
         <Grid Background="Transparent">
-            <Track Name="PART_Track" IsDirectionReversed="True">
-                <Track.Thumb>
-                    <Thumb Style="{StaticResource ScrollBarThumb}" />
-                </Track.Thumb>
-            </Track>
+            <Border Name="Border" Width="4" HorizontalAlignment="Left">
+                <Track Name="PART_Track" IsDirectionReversed="True">
+                    <Track.Thumb>
+                        <Thumb Style="{StaticResource ScrollBarThumb}" />
+                    </Track.Thumb>
+                </Track>
+            </Border>
         </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Border" Property="Width" Value="6" />
+                <Setter TargetName="Border" Property="Margin" Value="5,0,0,0" />
+                <Setter TargetName="Border" Property="Background" Value="#19000000" />
+            </Trigger>
+        </ControlTemplate.Triggers>
     </ControlTemplate>
 
     <ControlTemplate x:Key="HorizontalScrollBar" TargetType="{x:Type ScrollBar}">
         <Grid Background="Transparent">
-            <Track Name="PART_Track" IsDirectionReversed="False">
-                <Track.Thumb>
-                    <Thumb Style="{StaticResource ScrollBarThumb}" />
-                </Track.Thumb>
-            </Track>
+            <Border Name="Border" Height="4" VerticalAlignment="Bottom">
+                <Track Name="PART_Track" IsDirectionReversed="False">
+                    <Track.Thumb>
+                        <Thumb Style="{StaticResource ScrollBarThumb}" />
+                    </Track.Thumb>
+                </Track>
+            </Border>
         </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Border" Property="Height" Value="6" />
+                <Setter TargetName="Border" Property="Margin" Value="0,0,0,5" />
+                <Setter TargetName="Border" Property="Background" Value="#19000000" />
+            </Trigger>
+        </ControlTemplate.Triggers>
     </ControlTemplate>
 
     <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}">
@@ -148,11 +166,11 @@
         <Style.Triggers>
             <Trigger Property="Orientation" Value="Horizontal">
                 <Setter Property="Width" Value="Auto"/>
-                <Setter Property="Height" Value="4" />
+                <Setter Property="Height" Value="12" />
                 <Setter Property="Template" Value="{StaticResource HorizontalScrollBar}" />
             </Trigger>
             <Trigger Property="Orientation" Value="Vertical">
-                <Setter Property="Width" Value="4" />
+                <Setter Property="Width" Value="12" />
                 <Setter Property="Height" Value="Auto" />
                 <Setter Property="Template" Value="{StaticResource VerticalScrollBar}" />
             </Trigger>

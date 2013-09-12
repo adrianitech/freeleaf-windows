@@ -4,11 +4,10 @@
         xmlns:model="clr-namespace:FreeLeaf.ViewModel"
         DataContext="{Binding Path=Main, Source={StaticResource Locator}}"
         Title="FreeLeaf" Width="700" Height="470" WindowStartupLocation="CenterScreen"
-        WindowStyle="None" AllowsTransparency="True" Background="{x:Null}" ResizeMode="CanMinimize"
-        FontFamily="Assets/#Segoe WP" UseLayoutRounding="True">
+        WindowStyle="SingleBorderWindow" ResizeMode="CanMinimize" FontFamily="Assets/#Segoe WP" UseLayoutRounding="True">
     
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="50" />
+        <WindowChrome CaptionHeight="40" UseAeroCaptionButtons="False" ResizeBorderThickness="5" />
     </WindowChrome.WindowChrome>
     
     <Window.Resources>
@@ -21,10 +20,7 @@
         <model:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
     </Window.Resources>
 
-    <Grid Background="White" Margin="10">
-        <Grid.Effect>
-            <DropShadowEffect ShadowDepth="0" BlurRadius="10" Color="Black" Opacity="0.4" />
-        </Grid.Effect>
+    <Grid Background="White">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300" />
@@ -201,7 +197,7 @@
                         </Image>
                     </Grid>
                     <TextBlock Margin="0,25,0,5" Text="{Binding SelectedItem.Name}" Foreground="#323232" FontSize="32" FontFamily="Assets/#Segoe WP Light" HorizontalAlignment="Center" />
-                    <TextBlock Margin="0,0,0,25" Foreground="#4b4b4b" FontSize="11" FontFamily="Assets/#Segoe WP" TextAlignment="Center" HorizontalAlignment="Center" LineHeight="16">
+                    <TextBlock Margin="0,0,0,25" Foreground="#4b4b4b" FontSize="11" TextAlignment="Center" HorizontalAlignment="Center" LineHeight="16">
                         BATTERY: <Run Text="{Binding SelectedItem.Battery}" />
                         FREE SPACE: <Run Text="{Binding SelectedItem.Storage}" />
                         <LineBreak />

@@ -11,6 +11,17 @@ namespace FreeLeaf.ViewModel
 {
     public class TransferViewModel : ViewModelBase
     {
+        private static ObservableCollection<DriveItem> queue;
+        public ObservableCollection<DriveItem> Queue
+        {
+            get { return queue; }
+            set
+            {
+                queue = value;
+                RaisePropertyChanged("Queue");
+            }
+        }
+
         private ObservableCollection<DriveItem> localDrive;
         public ObservableCollection<DriveItem> LocalDrive
         {
@@ -19,6 +30,17 @@ namespace FreeLeaf.ViewModel
             {
                 localDrive = value;
                 RaisePropertyChanged("LocalDrive");
+            }
+        }
+
+        private DeviceItem selectedItem;
+        public DeviceItem SelectedItem
+        {
+            get { return selectedItem; }
+            set
+            {
+                selectedItem = value;
+                RaisePropertyChanged("SelectedItem");
             }
         }
 
@@ -35,6 +57,7 @@ namespace FreeLeaf.ViewModel
 
         public TransferViewModel()
         {
+            queue = new ObservableCollection<DriveItem>();
             localDrive = new ObservableCollection<DriveItem>();
             NavigateLocalHome();
         }
@@ -71,7 +94,7 @@ namespace FreeLeaf.ViewModel
             LocalDrive.Add(new DriveItem()
             {
                 Path = ldinfo.Parent == null ? "/" : ldinfo.Parent.FullName,
-                Name = "Parent directory",
+                Name = "..",
                 IsFolder = true,
                 IsParent = true
             });
@@ -94,16 +117,25 @@ namespace FreeLeaf.ViewModel
             var files = Directory.GetFiles(path);
             foreach (var file in files)
             {
-                var finfo = new FileInfo(file);
-                if (!finfo.Attributes.HasFlag(FileAttributes.Hidden))
+                var i = Queue.FirstOrDefault((e) => e.Path.Equals(file));
+                if (i != null)
                 {
-                    LocalDrive.Add(new DriveItem()
+                    LocalDrive.Add(i);
+                }
+                else
+                {
+                    var finfo = new FileInfo(file);
+                    if (!finfo.Attributes.HasFlag(FileAttributes.Hidden))
                     {
-                        Path = file,
-                        Name = finfo.Name,
-                        Size = SizeToString(finfo.Length),
-                        IsFolder = false
-                    });
+                        LocalDrive.Add(new DriveItem()
+                        {
+                            Path = file,
+                            Name = finfo.Name,
+                            Size = SizeToString(finfo.Length),
+                            IsFolder = false,
+
+                        });
+                    }
                 }
             }
         }
@@ -121,62 +153,75 @@ namespace FreeLeaf.ViewModel
 
             return string.Format("{0:0.##} {1}", len, sizes[order]);
         }
-    }
 
-    public class DriveItem : ObservableObject
-    {
-        private string path;
-        public string Path
+        public class DriveItem : ObservableObject
         {
-            get { return path; }
-            set
+            private string path;
+            public string Path
             {
-                path = value;
-                RaisePropertyChanged("Path");
+                get { return path; }
+                set
+                {
+                    path = value;
+                    RaisePropertyChanged("Path");
+                }
             }
-        }
 
-        private string name;
-        public string Name
-        {
-            get { return name; }
-            set
+            private string name;
+            public string Name
             {
-                name = value;
-                RaisePropertyChanged("Name");
+                get { return name; }
+                set
+                {
+                    name = value;
+                    RaisePropertyChanged("Name");
+                }
             }
-        }
 
-        private string size;
-        public string Size
-        {
-            get { return size; }
-            set
+            private string size;
+            public string Size
             {
-                size = value;
-                RaisePropertyChanged("Size");
+                get { return size; }
+                set
+                {
+                    size = value;
+                    RaisePropertyChanged("Size");
+                }
             }
-        }
 
-        private bool isFolder;
-        public bool IsFolder
-        {
-            get { return isFolder; }
-            set
+            private bool isChecked;
+            public bool IsChecked
             {
-                isFolder = value;
-                RaisePropertyChanged("IsFolder");
+                get { return isChecked; }
+                set
+                {
+                    isChecked = value;
+                    if (isChecked) queue.Add(this);
+                    else queue.Remove(this);
+                    RaisePropertyChanged("IsChecked");
+                }
             }
-        }
 
-        private bool isParent;
-        public bool IsParent
-        {
-            get { return isParent; }
-            set
+            private bool isFolder;
+            public bool IsFolder
             {
-                isParent = value;
-                RaisePropertyChanged("IsParent");
+                get { return isFolder; }
+                set
+                {
+                    isFolder = value;
+                    RaisePropertyChanged("IsFolder");
+                }
+            }
+
+            private bool isParent;
+            public bool IsParent
+            {
+                get { return isParent; }
+                set
+                {
+                    isParent = value;
+                    RaisePropertyChanged("IsParent");
+                }
             }
         }
     }

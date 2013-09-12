@@ -23,11 +23,12 @@ namespace FreeLeaf
         {
             InitializeComponent();
             model = (TransferViewModel)DataContext;
+            model.SelectedItem = item;
         }
 
         private void LocalDriveList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = (e.OriginalSource as FrameworkElement).DataContext as DriveItem;
+            var item = (e.OriginalSource as FrameworkElement).DataContext as FreeLeaf.ViewModel.TransferViewModel.DriveItem;
             if (item != null)
             {
                 if (item.IsFolder)

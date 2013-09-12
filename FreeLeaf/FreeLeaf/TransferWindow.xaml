@@ -4,11 +4,10 @@
         xmlns:model="clr-namespace:FreeLeaf.ViewModel"
         DataContext="{Binding Path=Transfer, Source={StaticResource Locator}}"
         Title="FreeLeaf - Transfer" Height="570" Width="960" MinHeight="570" MinWidth="960" WindowStartupLocation="CenterScreen"
-        WindowStyle="None" AllowsTransparency="True" Background="{x:Null}"
-        FontFamily="Assets/#Cantarell Regular" UseLayoutRounding="True">
+        WindowStyle="SingleBorderWindow" FontFamily="Assets/#Segoe WP" UseLayoutRounding="True">
 
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="40" ResizeBorderThickness="15" />
+        <WindowChrome CaptionHeight="40" UseAeroCaptionButtons="False" ResizeBorderThickness="5" />
     </WindowChrome.WindowChrome>
     
     <Window.Resources>
@@ -31,11 +30,142 @@
         </Style>
     </Window.Resources>
 
-    <Border Background="White" Margin="10">
-        <Border.Effect>
-            <DropShadowEffect ShadowDepth="0" BlurRadius="10" Color="Black" Opacity="0.4" />
-        </Border.Effect>
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60" />
+            <RowDefinition />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid>
+            <TextBlock Margin="20,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                <Run Text="{Binding Path=SelectedItem.Name, Mode=OneWay}" Foreground="#323232" FontSize="14" /><LineBreak />
+                <Span Foreground="#4b4b4b" FontSize="10">
+                    BATTERY: <Run Text="{Binding Path=SelectedItem.Battery, Mode=OneWay}" />
+                    FREE SPACE: <Run Text="{Binding Path=SelectedItem.Storage, Mode=OneWay}" />
+                </Span>
+            </TextBlock>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True" Margin="0,20,20,0">
+                <Button Style="{StaticResource SimpleButtonStyle}">
+                    <Image Source="Assets/minimize.png" Width="11" Height="11" />
+                </Button>
+                <Button Margin="15,0,0,0" Style="{StaticResource SimpleButtonStyle}">
+                    <Image Source="Assets/maximize.png" Width="12" Height="11" />
+                </Button>
+                <Button Margin="15,0,0,0" Style="{StaticResource SimpleButtonStyle}">
+                    <Image Source="Assets/close.png" Width="11" Height="11" />
+                </Button>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition MinWidth="200" />
+                <ColumnDefinition Width="11" />
+                <ColumnDefinition MinWidth="200" />
+            </Grid.ColumnDefinitions>
+            <ListView Grid.Row="1" ItemsSource="{Binding LocalDrive}" Background="{x:Null}" BorderThickness="0" Padding="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      MouseDoubleClick="LocalDriveList_MouseDoubleClick">
+                <ListView.Style>
+                    <Style TargetType="ListView">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListView">
+                                    <ScrollViewer>
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.Style>
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <Border Name="Border" Padding="20,8" Background="Transparent">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="16" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <CheckBox Name="CheckBox" VerticalAlignment="Center" IsChecked="{Binding Path=IsChecked, Mode=TwoWay}">
+                                                <CheckBox.Style>
+                                                    <Style TargetType="CheckBox">
+                                                        <Setter Property="Width" Value="12" />
+                                                        <Setter Property="Height" Value="12" />
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="CheckBox">
+                                                                    <Border Padding="2" BorderThickness="1" BorderBrush="#333333" Background="Transparent">
+                                                                        <Rectangle Name="Check" Fill="#333333" Visibility="Hidden" />
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsChecked" Value="True">
+                                                                            <Setter TargetName="Check" Property="Visibility" Value="Visible" />
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                </CheckBox.Style>
+                                            </CheckBox>
+                                            <Image Name="ImageType" Margin="10,0,0,0" Grid.Column="1" Source="Assets/file.png" Width="16" Height="16" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="2" Margin="10,0" Text="{Binding Name}" Foreground="#333333" FontSize="14" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                            <TextBlock Name="TextSize" Grid.Column="3" Text="{Binding Size}" Foreground="#333333" FontSize="12" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#f6f5f1" />
+                                        </Trigger>
+                                        <DataTrigger Binding="{Binding IsParent}" Value="True">
+                                            <Setter TargetName="CheckBox" Property="Visibility" Value="Hidden" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding IsFolder}" Value="True">
+                                            <Setter TargetName="ImageType" Property="Source" Value="Assets/folder.png" />
+                                            <Setter TargetName="TextSize" Property="Visibility" Value="Collapsed" />
+                                            <Setter TargetName="CheckBox" Property="Visibility" Value="Hidden" />
+                                        </DataTrigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+            </ListView>
+            <GridSplitter Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <GridSplitter.Style>
+                    <Style TargetType="GridSplitter">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="GridSplitter">
+                                    <Grid Background="Transparent">
+                                        <Rectangle Fill="#e7e7e5" Width="1" />
+                                    </Grid>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </GridSplitter.Style>
+            </GridSplitter>
+        </Grid>
+        <Border Grid.Row="2" Grid.ColumnSpan="3" Background="#f6f5f1" BorderThickness="0,1,0,0" BorderBrush="#e7e7e5">
+            <Grid Margin="20,10">
+                <TextBlock>
+                    There are <Run Text="{Binding Path=Queue.Count, Mode=OneWay}" /> item(s) in queue.
+                    <Hyperlink>View queue</Hyperlink> or <Hyperlink>clear queue</Hyperlink>.
+                    <LineBreak /><Hyperlink>Start</Hyperlink> the file transfer process
+                </TextBlock>
+            </Grid>
+        </Border>
+        <!--   <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
@@ -267,6 +397,7 @@
                     </ProgressBar>
                 </StackPanel>
             </Border>
-        </Grid>
-    </Border>
+        </Grid>-->
+    </Grid>
 </Window>
+
