@@ -28,13 +28,35 @@ namespace FreeLeaf
 
         private void LocalDriveList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = (e.OriginalSource as FrameworkElement).DataContext as FreeLeaf.ViewModel.TransferViewModel.DriveItem;
+            var item = (e.OriginalSource as FrameworkElement).DataContext as DriveItem;
             if (item != null)
             {
                 if (item.IsFolder)
                 {
                     model.NavigateLocal(item.Path);
                 }
+            }
+        }
+
+        private void HyperlinkClearDestination_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in ListLocal.SelectedItems)
+            {
+                (item as DriveItem).Destination = null;
+            }
+        }
+
+        private void HyperlinkSetDestination_Click(object sender, RoutedEventArgs e)
+        {
+            Popip.IsOpen = true;
+        }
+
+        private void TreeView_MouseDoubleClick_1(object sender, MouseButtonEventArgs e)
+        {
+            var s = (sender as TreeView).SelectedItem as TreeViewItem;
+            foreach (var item in ListLocal.SelectedItems)
+            {
+                (item as DriveItem).Destination = s.Header.ToString();
             }
         }
     }

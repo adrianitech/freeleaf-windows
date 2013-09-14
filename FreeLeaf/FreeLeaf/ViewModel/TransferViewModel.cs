@@ -11,7 +11,7 @@ namespace FreeLeaf.ViewModel
 {
     public class TransferViewModel : ViewModelBase
     {
-        private static ObservableCollection<DriveItem> queue;
+        private ObservableCollection<DriveItem> queue;
         public ObservableCollection<DriveItem> Queue
         {
             get { return queue; }
@@ -102,25 +102,36 @@ namespace FreeLeaf.ViewModel
             var dirs = Directory.GetDirectories(path);
             foreach (var dir in dirs)
             {
-                var dinfo = new DirectoryInfo(dir);
-                if (!dinfo.Attributes.HasFlag(FileAttributes.Hidden))
+                var item = queue.FirstOrDefault((t) => t.Path.Equals(dir));
+                if (item != null)
                 {
-                    LocalDrive.Add(new DriveItem()
+                    LocalDrive.Add(item);
+                }
+                else
+                {
+                    var dinfo = new DirectoryInfo(dir);
+                    if (!dinfo.Attributes.HasFlag(FileAttributes.Hidden))
                     {
-                        Path = dir,
-                        Name = dinfo.Name,
-                        IsFolder = true
-                    });
+                        LocalDrive.Add(new DriveItem()
+                        {
+                            Model = this,
+                            Path = dir,
+                            Name = dinfo.Name,
+                            Size = "DIR",
+                            Date = dinfo.CreationTime.ToString(),
+                            IsFolder = true
+                        });
+                    }
                 }
             }
 
             var files = Directory.GetFiles(path);
             foreach (var file in files)
             {
-                var i = Queue.FirstOrDefault((e) => e.Path.Equals(file));
-                if (i != null)
+                var item = queue.FirstOrDefault((t) => t.Path.Equals(file));
+                if (item != null)
                 {
-                    LocalDrive.Add(i);
+                    LocalDrive.Add(item);
                 }
                 else
                 {
@@ -129,9 +140,11 @@ namespace FreeLeaf.ViewModel
                     {
                         LocalDrive.Add(new DriveItem()
                         {
+                            Model = this,
                             Path = file,
                             Name = finfo.Name,
                             Size = SizeToString(finfo.Length),
+                            Date = finfo.CreationTime.ToString(),
                             IsFolder = false,
 
                         });
@@ -140,7 +153,7 @@ namespace FreeLeaf.ViewModel
             }
         }
 
-        private string SizeToString(long size)
+        public string SizeToString(long size)
         {
             string[] sizes = { "B", "KB", "MB", "GB" };
             double len = size;
@@ -153,74 +166,107 @@ namespace FreeLeaf.ViewModel
 
             return string.Format("{0:0.##} {1}", len, sizes[order]);
         }
+    }
 
-        public class DriveItem : ObservableObject
+    public class DriveItem : ObservableObject
+    {
+        public TransferViewModel Model;
+
+        private string path;
+        public string Path
         {
-            private string path;
-            public string Path
+            get { return path; }
+            set
             {
-                get { return path; }
-                set
+                path = value;
+                RaisePropertyChanged("Path");
+            }
+        }
+
+        private string name;
+        public string Name
+        {
+            get { return name; }
+            set
+            {
+                name = value;
+                RaisePropertyChanged("Name");
+            }
+        }
+
+        private string date;
+        public string Date
+        {
+            get { return date; }
+            set
+            {
+                date = value;
+                RaisePropertyChanged("Date");
+            }
+        }
+
+        private string size;
+        public string Size
+        {
+            get { return size; }
+            set
+            {
+                size = value;
+                RaisePropertyChanged("Size");
+            }
+        }
+
+        private string destination;
+        public string Destination
+        {
+            get { return destination; }
+            set
+            {
+                if (!this.IsFolder)
                 {
-                    path = value;
-                    RaisePropertyChanged("Path");
+                    destination = value;
+                    IsChecked = !string.IsNullOrEmpty(destination);
+                    RaisePropertyChanged("Destination");
                 }
             }
+        }
 
-            private string name;
-            public string Name
+        private bool isFolder;
+        public bool IsFolder
+        {
+            get { return isFolder; }
+            set
             {
-                get { return name; }
-                set
-                {
-                    name = value;
-                    RaisePropertyChanged("Name");
-                }
+                isFolder = value;
+                RaisePropertyChanged("IsFolder");
             }
+        }
 
-            private string size;
-            public string Size
+        private bool isParent;
+        public bool IsParent
+        {
+            get { return isParent; }
+            set
             {
-                get { return size; }
-                set
-                {
-                    size = value;
-                    RaisePropertyChanged("Size");
-                }
+                isParent = value;
+                RaisePropertyChanged("IsParent");
             }
+        }
 
-            private bool isChecked;
-            public bool IsChecked
+        public bool IsChecked
+        {
+            set
             {
-                get { return isChecked; }
-                set
+                if (value)
                 {
-                    isChecked = value;
-                    if (isChecked) queue.Add(this);
-                    else queue.Remove(this);
-                    RaisePropertyChanged("IsChecked");
+                    if (!Model.Queue.Contains(this))
+                    {
+                        Model.Queue.Add(this);
+                    }
                 }
-            }
-
-            private bool isFolder;
-            public bool IsFolder
-            {
-                get { return isFolder; }
-                set
+                else
                 {
-                    isFolder = value;
-                    RaisePropertyChanged("IsFolder");
-                }
-            }
-
-            private bool isParent;
-            public bool IsParent
-            {
-                get { return isParent; }
-                set
-                {
-                    isParent = value;
-                    RaisePropertyChanged("IsParent");
+                    Model.Queue.Remove(this);
                 }
             }
         }

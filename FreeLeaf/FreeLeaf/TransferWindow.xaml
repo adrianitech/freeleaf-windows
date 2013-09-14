@@ -57,18 +57,41 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition MinWidth="200" />
-                <ColumnDefinition Width="11" />
-                <ColumnDefinition MinWidth="200" />
-            </Grid.ColumnDefinitions>
-            <ListView Grid.Row="1" ItemsSource="{Binding LocalDrive}" Background="{x:Null}" BorderThickness="0" Padding="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+            <ListView x:Name="ListLocal" Grid.Row="1" ItemsSource="{Binding LocalDrive}" Background="{x:Null}" BorderThickness="0" Padding="0"
                       MouseDoubleClick="LocalDriveList_MouseDoubleClick">
-                <ListView.Style>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="File name" Width="500">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" Margin="20,0,0,0" Foreground="#333333" FontSize="14" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Date modified" Width="150">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Date}" Foreground="#333333" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="File size" Width="100">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Size}" Foreground="#333333" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Transfer destination" Width="500">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Destination}" Foreground="#dc4323" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+                <!--<ListView.Style>
                     <Style TargetType="ListView">
                         <Setter Property="Template">
                             <Setter.Value>
@@ -80,59 +103,22 @@
                             </Setter.Value>
                         </Setter>
                     </Style>
-                </ListView.Style>
+                </ListView.Style>-->
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListViewItem">
-                                    <Border Name="Border" Padding="20,8" Background="Transparent">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="16" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <CheckBox Name="CheckBox" VerticalAlignment="Center" IsChecked="{Binding Path=IsChecked, Mode=TwoWay}">
-                                                <CheckBox.Style>
-                                                    <Style TargetType="CheckBox">
-                                                        <Setter Property="Width" Value="12" />
-                                                        <Setter Property="Height" Value="12" />
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="CheckBox">
-                                                                    <Border Padding="2" BorderThickness="1" BorderBrush="#333333" Background="Transparent">
-                                                                        <Rectangle Name="Check" Fill="#333333" Visibility="Hidden" />
-                                                                    </Border>
-                                                                    <ControlTemplate.Triggers>
-                                                                        <Trigger Property="IsChecked" Value="True">
-                                                                            <Setter TargetName="Check" Property="Visibility" Value="Visible" />
-                                                                        </Trigger>
-                                                                    </ControlTemplate.Triggers>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </Style>
-                                                </CheckBox.Style>
-                                            </CheckBox>
-                                            <Image Name="ImageType" Margin="10,0,0,0" Grid.Column="1" Source="Assets/file.png" Width="16" Height="16" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="2" Margin="10,0" Text="{Binding Name}" Foreground="#333333" FontSize="14" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                            <TextBlock Name="TextSize" Grid.Column="3" Text="{Binding Size}" Foreground="#333333" FontSize="12" VerticalAlignment="Center" />
-                                        </Grid>
+                                    <Border Name="Border" Height="32" Background="Transparent">
+                                        <GridViewRowPresenter />
                                     </Border>
                                     <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#f6f5f1" />
+                                        </Trigger>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="Border" Property="Background" Value="#f6f5f1" />
                                         </Trigger>
-                                        <DataTrigger Binding="{Binding IsParent}" Value="True">
-                                            <Setter TargetName="CheckBox" Property="Visibility" Value="Hidden" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsFolder}" Value="True">
-                                            <Setter TargetName="ImageType" Property="Source" Value="Assets/folder.png" />
-                                            <Setter TargetName="TextSize" Property="Visibility" Value="Collapsed" />
-                                            <Setter TargetName="CheckBox" Property="Visibility" Value="Hidden" />
-                                        </DataTrigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
@@ -140,28 +126,81 @@
                     </Style>
                 </ListView.ItemContainerStyle>
             </ListView>
-            <GridSplitter Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                <GridSplitter.Style>
-                    <Style TargetType="GridSplitter">
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="GridSplitter">
-                                    <Grid Background="Transparent">
-                                        <Rectangle Fill="#e7e7e5" Width="1" />
-                                    </Grid>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </GridSplitter.Style>
-            </GridSplitter>
         </Grid>
         <Border Grid.Row="2" Grid.ColumnSpan="3" Background="#f6f5f1" BorderThickness="0,1,0,0" BorderBrush="#e7e7e5">
             <Grid Margin="20,10">
+                <Popup x:Name="Popip" PlacementTarget="{Binding ElementName=sss}" Placement="Top" StaysOpen="False">
+                    <Border Width="250" Height="300" Background="White" BorderThickness="1" BorderBrush="Black">
+                        <TreeView MouseDoubleClick="TreeView_MouseDoubleClick_1">
+                            <TreeViewItem Header="/sdcard">
+                                <TreeViewItem Header="music" />
+                                <TreeViewItem Header="new" />
+                                <TreeViewItem Header="sadsadsa" />
+                                <TreeViewItem Header="sadsadsa" />
+                                <TreeViewItem Header="sadsadsa" />
+                                <TreeViewItem Header="sadsadsa" />
+                                <TreeViewItem Header="sdsadsa">
+                                    <TreeViewItem Header="sadsadsa" />
+                                    <TreeViewItem Header="sadsadsa" />
+                                    <TreeViewItem Header="sadsadsa" />
+                                    <TreeViewItem Header="sadsadsa" />
+                                    <TreeViewItem Header="sadsadsa" />
+                                    <TreeViewItem Header="sadsadsa" />
+                                    <TreeViewItem Header="sdsadsa">
+                                        <TreeViewItem Header="sadsadsa" />
+                                        <TreeViewItem Header="sadsadsa" />
+                                        <TreeViewItem Header="sadsadsa" />
+                                        <TreeViewItem Header="sadsadsa" />
+                                        <TreeViewItem Header="sadsadsa" />
+                                        <TreeViewItem Header="sadsadsa" />
+                                        <TreeViewItem Header="sdsadsa">
+                                            <TreeViewItem Header="sadsadsa" />
+                                            <TreeViewItem Header="sadsadsa" />
+                                            <TreeViewItem Header="sadsadsa" />
+                                            <TreeViewItem Header="sadsadsa" />
+                                            <TreeViewItem Header="sadsadsa" />
+                                            <TreeViewItem Header="sadsadsa" />
+                                            <TreeViewItem Header="sdsadsa">
+                                                <TreeViewItem Header="sadsadsa" />
+                                                <TreeViewItem Header="sadsadsa" />
+                                                <TreeViewItem Header="sadsadsa" />
+                                                <TreeViewItem Header="sadsadsa" />
+                                                <TreeViewItem Header="sadsadsa" />
+                                                <TreeViewItem Header="sadsadsa" />
+                                                <TreeViewItem Header="sdsadsa">
+                                                    <TreeViewItem Header="sadsadsa" />
+                                                    <TreeViewItem Header="sadsadsa" />
+                                                    <TreeViewItem Header="sadsadsa" />
+                                                    <TreeViewItem Header="sadsadsa" />
+                                                    <TreeViewItem Header="sadsadsa" />
+                                                    <TreeViewItem Header="sadsadsa" />
+                                                    <TreeViewItem Header="sdsadsa">
+                                                        <TreeViewItem Header="sadsadsa" />
+                                                        <TreeViewItem Header="sadsadsa" />
+                                                        <TreeViewItem Header="sadsadsa" />
+                                                        <TreeViewItem Header="sadsadsa" />
+                                                        <TreeViewItem Header="sadsadsa" />
+                                                        <TreeViewItem Header="sadsadsa" />
+                                                    </TreeViewItem>
+                                                </TreeViewItem>
+                                            </TreeViewItem>
+                                        </TreeViewItem>
+                                    </TreeViewItem>
+                                </TreeViewItem>
+                            </TreeViewItem>
+                            <TreeViewItem Header="sadsadsa" />
+                            <TreeViewItem Header="sadsadsa" />
+                            <TreeViewItem Header="sadsadsa" />
+                            <TreeViewItem Header="sadsadsa" />
+                            <TreeViewItem Header="sadsadsa" />
+                            <TreeViewItem Header="sadsadsa" />
+                        </TreeView>
+                    </Border>
+                </Popup>
                 <TextBlock>
-                    There are <Run Text="{Binding Path=Queue.Count, Mode=OneWay}" /> item(s) in queue.
-                    <Hyperlink>View queue</Hyperlink> or <Hyperlink>clear queue</Hyperlink>.
-                    <LineBreak /><Hyperlink>Start</Hyperlink> the file transfer process
+                    There are <Run Text="{Binding ElementName=ListLocal, Path=SelectedItems.Count, Mode=OneWay}" /> item(s) selected.
+                    <Hyperlink x:Name="sss" Click="HyperlinkSetDestination_Click">Set location</Hyperlink> or <Hyperlink Click="HyperlinkClearDestination_Click">clear location</Hyperlink>.
+                    <LineBreak />There are <Run Text="{Binding Path=Queue.Count, Mode=OneWay}" /> item(s) in queue.
                 </TextBlock>
             </Grid>
         </Border>
