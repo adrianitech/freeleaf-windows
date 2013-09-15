@@ -74,6 +74,8 @@ namespace FreeLeaf.ViewModel
             NavigateLocalHome();
         }
 
+        private string localPath, remotePath;
+
         public void NavigateLocalHome()
         {
             LocalDrive.Clear();
@@ -96,7 +98,7 @@ namespace FreeLeaf.ViewModel
                 });
             }
 
-            LocalCurrentDir = "Your PC";
+            localPath = "/";
         }
 
         public void Looo(DriveItem1 i)
@@ -120,75 +122,39 @@ namespace FreeLeaf.ViewModel
 
         public void NavigateLocal(string path)
         {
-            if (path.Equals("/"))
-            {
-                NavigateLocalHome();
-                return;
-            }
-
+            localPath = path;
             LocalDrive.Clear();
 
-            var ldinfo = new DirectoryInfo(path);
-            LocalCurrentDir = ldinfo.Name;
-            LocalDrive.Add(new DriveItem()
-            {
-                Path = ldinfo.Parent == null ? "/" : ldinfo.Parent.FullName,
-                Name = "..",
-                IsFolder = true,
-                IsParent = true
-            });
+            var di = new DirectoryInfo(path);
+            //if (di.Attributes.HasFlag(FileAttributes.Hidden)) return;
 
-            var dirs = Directory.GetDirectories(path);
+            var dirs = di.EnumerateDirectories();
             foreach (var dir in dirs)
             {
-                var item = queue.FirstOrDefault((t) => t.Path.Equals(dir));
-                if (item != null)
+                LocalDrive.Add(new DriveItem()
                 {
-                    LocalDrive.Add(item);
-                }
-                else
-                {
-                    var dinfo = new DirectoryInfo(dir);
-                    if (!dinfo.Attributes.HasFlag(FileAttributes.Hidden))
-                    {
-                        LocalDrive.Add(new DriveItem()
-                        {
-                            Model = this,
-                            Path = dir,
-                            Name = dinfo.Name,
-                            Size = "DIR",
-                            Date = dinfo.CreationTime.ToString(),
-                            IsFolder = true
-                        });
-                    }
-                }
+                    Model = this,
+                    Path = dir.FullName,
+                    Name = dir.Name,
+                    Extension = "FOLDER",
+                    Date = dir.LastWriteTime.ToString(),
+                    IsFolder = true
+                });
             }
 
-            var files = Directory.GetFiles(path);
+            var files = di.EnumerateFiles();
             foreach (var file in files)
             {
-                var item = queue.FirstOrDefault((t) => t.Path.Equals(file));
-                if (item != null)
+                LocalDrive.Add(new DriveItem()
                 {
-                    LocalDrive.Add(item);
-                }
-                else
-                {
-                    var finfo = new FileInfo(file);
-                    if (!finfo.Attributes.HasFlag(FileAttributes.Hidden))
-                    {
-                        LocalDrive.Add(new DriveItem()
-                        {
-                            Model = this,
-                            Path = file,
-                            Name = finfo.Name,
-                            Size = SizeToString(finfo.Length),
-                            Date = finfo.CreationTime.ToString(),
-                            IsFolder = false,
-
-                        });
-                    }
-                }
+                    Model = this,
+                    Path = file.FullName,
+                    Name = file.Name,
+                    Size = SizeToString(file.Length),
+                    Extension = file.Extension.Length >= 1 ? file.Extension.Substring(1).ToUpper() : "",
+                    Date = file.LastWriteTime.ToString(),
+                    IsFolder = false
+                });
             }
         }
 
@@ -204,6 +170,19 @@ namespace FreeLeaf.ViewModel
             }
 
             return string.Format("{0:0.##} {1}", len, sizes[order]);
+        }
+
+        public void NavigateLocalUp()
+        {
+            var info = Directory.GetParent(localPath);
+            if (info == null)
+            {
+                NavigateLocalHome();
+            }
+            else
+            {
+                NavigateLocal(info.FullName);
+            }
         }
     }
 
@@ -296,6 +275,17 @@ namespace FreeLeaf.ViewModel
             }
         }
 
+        private string extension;
+        public string Extension
+        {
+            get { return extension; }
+            set
+            {
+                extension = value;
+                RaisePropertyChanged("Extension");
+            }
+        }
+
         private string destination;
         public string Destination
         {
@@ -319,17 +309,6 @@ namespace FreeLeaf.ViewModel
             {
                 isFolder = value;
                 RaisePropertyChanged("IsFolder");
-            }
-        }
-
-        private bool isParent;
-        public bool IsParent
-        {
-            get { return isParent; }
-            set
-            {
-                isParent = value;
-                RaisePropertyChanged("IsParent");
             }
         }
 

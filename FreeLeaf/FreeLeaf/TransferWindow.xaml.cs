@@ -40,29 +40,10 @@ namespace FreeLeaf
 
         private void HyperlinkClearDestination_Click(object sender, RoutedEventArgs e)
         {
-            /*foreach (var item in ListLocal.SelectedItems)
-            {
-                (item as DriveItem).Destination = null;
-            }*/
-        }
-
-        private void HyperlinkSetDestination_Click(object sender, RoutedEventArgs e)
-        {
-          /*  Popip.IsOpen = true;*/
-        }
-
-        private void TreeView_MouseDoubleClick_1(object sender, MouseButtonEventArgs e)
-        {
-            /*var s = (sender as TreeView).SelectedItem as TreeViewItem;
             foreach (var item in ListLocal.SelectedItems)
             {
-                (item as DriveItem).Destination = s.Header.ToString();
-            }*/
-        }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            
+                (item as DriveItem).Destination = null;
+            }
         }
 
         private void TreeView_Drop_1(object sender, DragEventArgs e)
@@ -86,6 +67,11 @@ namespace FreeLeaf
             var item = e.OriginalSource as TreeViewItem;
             var i = item.Header as DriveItem1;
             model.Looo(i);
+        }
+
+        private void ButtonFolderUp_Click(object sender, RoutedEventArgs e)
+        {
+            model.NavigateLocalUp();
         }
     }
 }

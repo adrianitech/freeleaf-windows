@@ -52,7 +52,10 @@ namespace FreeLeaf
             {
                 if (item.ID == null)
                 {
-
+                    this.Hide();
+                    var transfer = new TransferWindow(model.SelectedItem);
+                    transfer.Closing += (sender1, e1) => { this.Show(); };
+                    transfer.Show();
                 }
                 else
                 {
