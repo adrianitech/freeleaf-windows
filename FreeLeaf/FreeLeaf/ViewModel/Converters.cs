@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 
 namespace FreeLeaf.ViewModel
@@ -98,6 +99,17 @@ namespace FreeLeaf.ViewModel
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public class DiscoveryListStyleSelector : StyleSelector
+    {
+        public Style ItemStyle { get; set; }
+        public Style ButtonStyle { get; set; }
+
+        public override Style SelectStyle(object item, DependencyObject container)
+        {
+            return ((DeviceItem)item).ID == null ? ButtonStyle : ItemStyle;
         }
     }
 }

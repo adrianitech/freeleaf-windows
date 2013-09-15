@@ -1,6 +1,7 @@
 ﻿using FreeLeaf.ViewModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace FreeLeaf
 {
@@ -41,6 +42,26 @@ namespace FreeLeaf
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void ListView_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var element = e.OriginalSource as FrameworkElement;
+            var item = element.DataContext as DeviceItem;
+            if (item != null)
+            {
+                if (item.ID == null)
+                {
+
+                }
+                else
+                {
+                    this.Hide();
+                    var transfer = new TransferWindow(model.SelectedItem);
+                    transfer.Closing += (sender1, e1) => { this.Show(); };
+                    transfer.Show();
+                }
+            }
         }
     }
 }

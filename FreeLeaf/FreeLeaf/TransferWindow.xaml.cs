@@ -40,24 +40,52 @@ namespace FreeLeaf
 
         private void HyperlinkClearDestination_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var item in ListLocal.SelectedItems)
+            /*foreach (var item in ListLocal.SelectedItems)
             {
                 (item as DriveItem).Destination = null;
-            }
+            }*/
         }
 
         private void HyperlinkSetDestination_Click(object sender, RoutedEventArgs e)
         {
-            Popip.IsOpen = true;
+          /*  Popip.IsOpen = true;*/
         }
 
         private void TreeView_MouseDoubleClick_1(object sender, MouseButtonEventArgs e)
         {
-            var s = (sender as TreeView).SelectedItem as TreeViewItem;
+            /*var s = (sender as TreeView).SelectedItem as TreeViewItem;
             foreach (var item in ListLocal.SelectedItems)
             {
                 (item as DriveItem).Destination = s.Header.ToString();
+            }*/
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void TreeView_Drop_1(object sender, DragEventArgs e)
+        {
+            var data = e.Data.GetData("myFormat") as System.Collections.IList;
+            var item = (e.OriginalSource as FrameworkElement).DataContext as DriveItem1;
+            foreach (var i in data)
+            {
+                (i as DriveItem).Destination = item.Path;
             }
+        }
+
+        private void Button_MouseLeftButtonDown_1(object sender, MouseButtonEventArgs e)
+        {
+            DataObject dragData = new DataObject("myFormat", ListLocal.SelectedItems);
+            DragDrop.DoDragDrop(ListLocal, dragData, DragDropEffects.Link);
+        }
+
+        private void TreeViewItem_Expanded(object sender, RoutedEventArgs e)
+        {
+            var item = e.OriginalSource as TreeViewItem;
+            var i = item.Header as DriveItem1;
+            model.Looo(i);
         }
     }
 }

@@ -17,6 +17,9 @@ namespace FreeLeaf.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
+
+        public static string[] Colors = new string[] { "#41bdbd", "#d76d93", "#7c4a81", "#eacb5f" };
+
         private UdpClient udpClient;
         private CollectionView view;
 
@@ -53,6 +56,8 @@ namespace FreeLeaf.ViewModel
             items = new ObservableCollection<DeviceItem>();
             view = (CollectionView)CollectionViewSource.GetDefaultView(items);
 
+            var r = new Random();
+
             /*for (int i = 0; i < 20; i++)
             {
                 items.Add(new DeviceItem()
@@ -61,12 +66,20 @@ namespace FreeLeaf.ViewModel
                     Username = "Adrian",
                     Device = "Nexus 4",
                     IsAvailable = true,
-                    IsPinned = i % 2 == 0
+                    IsPinned = i % 2 == 0,
+                    Color = MainViewModel.Colors[r.Next(Colors.Length)]
                 });
             }*/
 
+            items.Add(new DeviceItem()
+            {
+                Username = "Connect via IP address",
+                Device = "Nexus 4",
+                IsAvailable = true
+            });
 
-            try
+
+            /*try
             {
                 var json = File.ReadAllText("D:/pinned.txt");
                 var objs = (JArray)JsonConvert.DeserializeObject(json);
@@ -84,7 +97,7 @@ namespace FreeLeaf.ViewModel
             }
             catch
             {
-            }
+            }*/
 
             var groupDescription = new PropertyGroupDescription("IsPinned");
             view.GroupDescriptions.Add(groupDescription);
@@ -122,6 +135,7 @@ namespace FreeLeaf.ViewModel
                 {
                     for (int i = 0; i < items.Count; i++)
                     {
+                        if (items[i].ID == null) continue;
                         if (items[i].LastUpdated >= 2 * items[i].RefreshRate)
                         {
                             if (items[i].IsPinned)
@@ -176,7 +190,10 @@ namespace FreeLeaf.ViewModel
                         RefreshRate = array[6].Value<int>() / 1000,
                         Address = ip
                     };
-                    items.Add(newItem);
+
+                    newItem.Color = Colors[Getss(newItem.ID)];
+
+                    items.Insert(0, newItem);
 
                     if (SelectedItem == null) SelectedItem = newItem;
                 }), DispatcherPriority.Background);
@@ -200,6 +217,16 @@ namespace FreeLeaf.ViewModel
             }
 
             udpClient.BeginReceive(new AsyncCallback(ReceiveDeviceInfo), null);
+        }
+
+        private int Getss(string id)
+        {
+            int x = 0;
+            for (int i = 0; i < id.Length; i++)
+            {
+                x += (int)id[i];
+            }
+            return x % Colors.Length;
         }
 
         public void EditPinned(DeviceItem item, bool pinned)
@@ -304,6 +331,18 @@ namespace FreeLeaf.ViewModel
 
                 isAvailable = value;
                 RaisePropertyChanged("IsAvailable");
+            }
+        }
+
+        private string color;
+        [JsonIgnore()]
+        public string Color
+        {
+            get { return color; }
+            set
+            {
+                color = value;
+                RaisePropertyChanged("Color");
             }
         }
 

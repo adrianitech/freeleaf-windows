@@ -116,48 +116,35 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
-                    <Border Name="Border" Background="#dc4323" />
+                    <Border Name="Border" Margin="4" Background="#d6d6d6" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="#888888" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
 
     <ControlTemplate x:Key="VerticalScrollBar" TargetType="{x:Type ScrollBar}">
-        <Grid Background="Transparent">
-            <Border Name="Border" Width="4" HorizontalAlignment="Left">
-                <Track Name="PART_Track" IsDirectionReversed="True">
-                    <Track.Thumb>
-                        <Thumb Style="{StaticResource ScrollBarThumb}" />
-                    </Track.Thumb>
-                </Track>
-            </Border>
-        </Grid>
-        <ControlTemplate.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="Border" Property="Width" Value="6" />
-                <Setter TargetName="Border" Property="Margin" Value="5,0,0,0" />
-                <Setter TargetName="Border" Property="Background" Value="#19000000" />
-            </Trigger>
-        </ControlTemplate.Triggers>
+        <Border Background="#ededed">
+            <Track Name="PART_Track" IsDirectionReversed="True">
+                <Track.Thumb>
+                    <Thumb Style="{StaticResource ScrollBarThumb}" />
+                </Track.Thumb>
+            </Track>
+        </Border>
     </ControlTemplate>
 
     <ControlTemplate x:Key="HorizontalScrollBar" TargetType="{x:Type ScrollBar}">
-        <Grid Background="Transparent">
-            <Border Name="Border" Height="4" VerticalAlignment="Bottom">
-                <Track Name="PART_Track" IsDirectionReversed="False">
-                    <Track.Thumb>
-                        <Thumb Style="{StaticResource ScrollBarThumb}" />
-                    </Track.Thumb>
-                </Track>
-            </Border>
-        </Grid>
-        <ControlTemplate.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="Border" Property="Height" Value="6" />
-                <Setter TargetName="Border" Property="Margin" Value="0,0,0,5" />
-                <Setter TargetName="Border" Property="Background" Value="#19000000" />
-            </Trigger>
-        </ControlTemplate.Triggers>
+        <Border Background="#ededed">
+            <Track Name="PART_Track" IsDirectionReversed="False">
+                <Track.Thumb>
+                    <Thumb Style="{StaticResource ScrollBarThumb}" />
+                </Track.Thumb>
+            </Track>
+        </Border>
     </ControlTemplate>
 
     <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}">
@@ -166,34 +153,15 @@
         <Style.Triggers>
             <Trigger Property="Orientation" Value="Horizontal">
                 <Setter Property="Width" Value="Auto"/>
-                <Setter Property="Height" Value="12" />
+                <Setter Property="Height" Value="16" />
                 <Setter Property="Template" Value="{StaticResource HorizontalScrollBar}" />
             </Trigger>
             <Trigger Property="Orientation" Value="Vertical">
-                <Setter Property="Width" Value="12" />
+                <Setter Property="Width" Value="16" />
                 <Setter Property="Height" Value="Auto" />
                 <Setter Property="Template" Value="{StaticResource VerticalScrollBar}" />
             </Trigger>
         </Style.Triggers>
-    </Style>
-
-    <Style TargetType="ScrollViewer">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="ScrollViewer">
-                    <Grid>
-                        <ScrollContentPresenter Content="{TemplateBinding ContentControl.Content}" ContentTemplate="{TemplateBinding ContentControl.ContentTemplate}"
-                                                CanContentScroll="{TemplateBinding ScrollViewer.CanContentScroll}" />
-                        <ScrollBar x:Name="PART_VerticalScrollBar" Minimum="0" Maximum="{TemplateBinding ScrollViewer.ScrollableHeight}" HorizontalAlignment="Left"
-                                   ViewportSize="{TemplateBinding ScrollViewer.ViewportHeight}" Value="{Binding Path=VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" 
-                                   Visibility="{TemplateBinding ScrollViewer.ComputedVerticalScrollBarVisibility}" Cursor="Arrow" AutomationProperties.AutomationId="VerticalScrollBar" />
-                        <ScrollBar x:Name="PART_HorizontalScrollBar" Minimum="0" Maximum="{TemplateBinding ScrollViewer.ScrollableWidth}" Orientation="Horizontal" VerticalAlignment="Bottom"
-                                   ViewportSize="{TemplateBinding ScrollViewer.ViewportWidth}" Value="{Binding Path=HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                   Visibility="{TemplateBinding ScrollViewer.ComputedHorizontalScrollBarVisibility}" Cursor="Arrow" AutomationProperties.AutomationId="HorizontalScrollBar" />
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
     
 </ResourceDictionary>

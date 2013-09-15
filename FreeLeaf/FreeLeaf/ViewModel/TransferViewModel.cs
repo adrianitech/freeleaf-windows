@@ -22,6 +22,17 @@ namespace FreeLeaf.ViewModel
             }
         }
 
+        private ObservableCollection<DriveItem1> localDrive1;
+        public ObservableCollection<DriveItem1> RemoteL
+        {
+            get { return localDrive1; }
+            set
+            {
+                localDrive1 = value;
+                RaisePropertyChanged("RemoteL");
+            }
+        }
+
         private ObservableCollection<DriveItem> localDrive;
         public ObservableCollection<DriveItem> LocalDrive
         {
@@ -59,6 +70,7 @@ namespace FreeLeaf.ViewModel
         {
             queue = new ObservableCollection<DriveItem>();
             localDrive = new ObservableCollection<DriveItem>();
+            localDrive1 = new ObservableCollection<DriveItem1>();
             NavigateLocalHome();
         }
 
@@ -74,9 +86,36 @@ namespace FreeLeaf.ViewModel
                     Name = drive,
                     IsFolder = true
                 });
+
+
+                RemoteL.Add(new DriveItem1()
+                {
+                    Path = drive,
+                    Name = drive,
+                    Items = new ObservableCollection<DriveItem1>() { new DriveItem1() }
+                });
             }
 
             LocalCurrentDir = "Your PC";
+        }
+
+        public void Looo(DriveItem1 i)
+        {
+            i.Items.Clear();
+            var dirs = Directory.GetDirectories(i.Path);
+            foreach (var dir in dirs)
+            {
+                var dinfo = new DirectoryInfo(dir);
+                if (!dinfo.Attributes.HasFlag(FileAttributes.Hidden))
+                {
+                    i.Items.Add(new DriveItem1()
+                    {
+                        Path = dir,
+                        Name = dinfo.Name,
+                        Items = new ObservableCollection<DriveItem1>() { new DriveItem1() }
+                    });
+                }
+            }
         }
 
         public void NavigateLocal(string path)
@@ -165,6 +204,47 @@ namespace FreeLeaf.ViewModel
             }
 
             return string.Format("{0:0.##} {1}", len, sizes[order]);
+        }
+    }
+
+    public class DriveItem1 : ObservableObject
+    {
+        public DriveItem1()
+        {
+            items = new ObservableCollection<DriveItem1>();
+        }
+
+        private string path;
+        public string Path
+        {
+            get { return path; }
+            set
+            {
+                path = value;
+                RaisePropertyChanged("Path");
+            }
+        }
+
+        private string name;
+        public string Name
+        {
+            get { return name; }
+            set
+            {
+                name = value;
+                RaisePropertyChanged("Name");
+            }
+        }
+
+        private ObservableCollection<DriveItem1> items;
+        public ObservableCollection<DriveItem1> Items
+        {
+            get { return items; }
+            set
+            {
+                items = value;
+                RaisePropertyChanged("Items");
+            }
         }
     }
 
