@@ -1,12 +1,16 @@
 ﻿using GalaSoft.MvvmLight;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace FreeLeaf.Model
 {
     public class TransferViewModel : ViewModelBase
     {
-        private string localPath, remotePath;
+        private string localPath;
 
         private ObservableCollection<LocalFileItem> queue;
         public ObservableCollection<LocalFileItem> Queue
@@ -41,6 +45,17 @@ namespace FreeLeaf.Model
             }
         }
 
+        private string status;
+        public string Status
+        {
+            get { return status; }
+            set
+            {
+                status = value;
+                RaisePropertyChanged("Status");
+            }
+        }
+
         public TransferViewModel()
         {
             if (IsInDesignMode) return;
@@ -50,75 +65,101 @@ namespace FreeLeaf.Model
             removeFiles = new ObservableCollection<RemoteFileItem>();
 
             NavigateLocalHome();
+            RemoteL.Add(new RemoteFileItem()
+            {
+                Path = "D:\\",
+                Name = "sdcard",
+                Items = new ObservableCollection<RemoteFileItem>()
+                {
+                    new RemoteFileItem()
+                    {
+                        Path = "D:\\",
+                        Name = "Local Disk (D:)",
+                        Items = new ObservableCollection<RemoteFileItem>()
+                        {
+                            new RemoteFileItem()
+                        }
+                    }
+                }
+            });
         }
 
         public void NavigateLocalHome()
         {
             localPath = "/";
-            remotePath = "/";
             LocalDrive.Clear();
 
-            var drives = Directory.GetLogicalDrives();
+            var drives = DriveInfo.GetDrives();
             foreach (var drive in drives)
             {
+                if (!drive.IsReady) continue;
+
                 LocalDrive.Add(new LocalFileItem()
                 {
-                    Path = drive,
-                    Name = drive,
-                    Extension = "DRIVE",
+                    Path = drive.Name,
+                    Name = string.Format("{0} ({1})",
+                        string.IsNullOrEmpty(drive.VolumeLabel) ?
+                        drive.DriveType.ToString() :
+                        drive.VolumeLabel,
+                        drive.Name.Substring(0, drive.Name.Length - 1)),
+                    Size = SizeToString(drive.TotalSize),
+                    Extension = drive.DriveFormat,
                     IsFolder = true
-                });
-
-                RemoteL.Add(new RemoteFileItem()
-                {
-                    Path = drive,
-                    Name = drive,
-                    Items = new ObservableCollection<RemoteFileItem>() { new RemoteFileItem() }
                 });
             }
         }
 
-        public void NavigateLocal(string path)
+        public async void NavigateLocal(string path)
         {
+            Status = "Populating folder";
             localPath = path;
             LocalDrive.Clear();
 
-            var di = new DirectoryInfo(path);
-
-            var dirs = di.EnumerateDirectories();
-            foreach (var dir in dirs)
+            await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                if(dir.Attributes.HasFlag(FileAttributes.Hidden |
-                    FileAttributes.System)) continue;
+                var di = new DirectoryInfo(path);
+                if (!di.Exists) return;
 
-                LocalDrive.Add(new LocalFileItem()
+                var dirs = di.EnumerateDirectories();
+                foreach (var dir in dirs)
                 {
-                    Model = this,
-                    Path = dir.FullName,
-                    Name = dir.Name,
-                    Extension = "FOLDER",
-                    Date = dir.LastWriteTime.ToString(),
-                    IsFolder = true
-                });
-            }
+                    if (dir.Attributes.HasFlag(FileAttributes.Hidden |
+                        FileAttributes.System)) continue;
 
-            var files = di.EnumerateFiles();
-            foreach (var file in files)
-            {
-                if (file.Attributes.HasFlag(FileAttributes.Hidden |
-                       FileAttributes.System)) continue;
+                    LocalDrive.Add(new LocalFileItem()
+                    {
+                        Model = this,
+                        Path = dir.FullName,
+                        Name = dir.Name,
+                        Extension = "FOLDER",
+                        Date = dir.LastWriteTime.ToString(),
+                        IsFolder = true
+                    });
+                }
 
-                LocalDrive.Add(new LocalFileItem()
+                var files = di.EnumerateFiles();
+                foreach (var file in files)
                 {
-                    Model = this,
-                    Path = file.FullName,
-                    Name = file.Name,
-                    Size = SizeToString(file.Length),
-                    Extension = file.Extension.Length >= 1 ? file.Extension.Substring(1).ToUpper() : "",
-                    Date = file.LastWriteTime.ToString(),
-                    IsFolder = false
-                });
-            }
+                    if (file.Attributes.HasFlag(FileAttributes.Hidden |
+                           FileAttributes.System)) continue;
+
+                    var item = Queue.FirstOrDefault((t) => t.Path.Equals(file.FullName));
+                    LocalDrive.Add(item != null ?
+                        item :
+                        new LocalFileItem()
+                        {
+                            Model = this,
+                            Path = file.FullName,
+                            Name = file.Name,
+                            Size = SizeToString(file.Length),
+                            Extension = file.Extension.Length >= 1 ? file.Extension.Substring(1).ToUpper() : "",
+                            Date = file.LastWriteTime.ToString(),
+                            IsFolder = false
+                        });
+                }
+            }), DispatcherPriority.Background);
+
+            Status = string.Empty;
         }
 
         public void NavigateLocalUp()
@@ -130,7 +171,6 @@ namespace FreeLeaf.Model
 
         public void PopulateRemoteFolder(RemoteFileItem item)
         {
-            remotePath = item.Path;
             item.Items.Clear();
 
             var dirs = Directory.GetDirectories(item.Path);

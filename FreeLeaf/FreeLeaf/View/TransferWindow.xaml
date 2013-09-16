@@ -46,7 +46,7 @@
                 <ListView x:Name="ListLocal" ItemsSource="{Binding LocalDrive}" MouseDoubleClick="LocalList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn Header="File name" Width="240">
+                            <GridViewColumn Header="Name" Width="240">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Name}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
@@ -60,7 +60,7 @@
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
-                            <GridViewColumn Header="File size" Width="90">
+                            <GridViewColumn Header="Size" Width="90">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding Size}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
