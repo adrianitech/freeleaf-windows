@@ -13,7 +13,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
 
-namespace FreeLeaf.ViewModel
+namespace FreeLeaf.Model
 {
     public class MainViewModel : ViewModelBase
     {

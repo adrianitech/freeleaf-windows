@@ -1,18 +1,15 @@
 ﻿using GalaSoft.MvvmLight;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FreeLeaf.ViewModel
+namespace FreeLeaf.Model
 {
     public class TransferViewModel : ViewModelBase
     {
-        private ObservableCollection<DriveItem> queue;
-        public ObservableCollection<DriveItem> Queue
+        private string localPath, remotePath;
+
+        private ObservableCollection<LocalFileItem> queue;
+        public ObservableCollection<LocalFileItem> Queue
         {
             get { return queue; }
             set
@@ -22,101 +19,62 @@ namespace FreeLeaf.ViewModel
             }
         }
 
-        private ObservableCollection<DriveItem1> localDrive1;
-        public ObservableCollection<DriveItem1> RemoteL
+        private ObservableCollection<RemoteFileItem> removeFiles;
+        public ObservableCollection<RemoteFileItem> RemoteL
         {
-            get { return localDrive1; }
+            get { return removeFiles; }
             set
             {
-                localDrive1 = value;
+                removeFiles = value;
                 RaisePropertyChanged("RemoteL");
             }
         }
 
-        private ObservableCollection<DriveItem> localDrive;
-        public ObservableCollection<DriveItem> LocalDrive
+        private ObservableCollection<LocalFileItem> localFiles;
+        public ObservableCollection<LocalFileItem> LocalDrive
         {
-            get { return localDrive; }
+            get { return localFiles; }
             set
             {
-                localDrive = value;
+                localFiles = value;
                 RaisePropertyChanged("LocalDrive");
-            }
-        }
-
-        private DeviceItem selectedItem;
-        public DeviceItem SelectedItem
-        {
-            get { return selectedItem; }
-            set
-            {
-                selectedItem = value;
-                RaisePropertyChanged("SelectedItem");
-            }
-        }
-
-        private string localCurrentDir;
-        public string LocalCurrentDir
-        {
-            get { return localCurrentDir; }
-            set
-            {
-                localCurrentDir = value;
-                RaisePropertyChanged("LocalCurrentDir");
             }
         }
 
         public TransferViewModel()
         {
-            queue = new ObservableCollection<DriveItem>();
-            localDrive = new ObservableCollection<DriveItem>();
-            localDrive1 = new ObservableCollection<DriveItem1>();
+            if (IsInDesignMode) return;
+
+            queue = new ObservableCollection<LocalFileItem>();
+            localFiles = new ObservableCollection<LocalFileItem>();
+            removeFiles = new ObservableCollection<RemoteFileItem>();
+
             NavigateLocalHome();
         }
 
-        private string localPath, remotePath;
-
         public void NavigateLocalHome()
         {
+            localPath = "/";
+            remotePath = "/";
             LocalDrive.Clear();
+
             var drives = Directory.GetLogicalDrives();
             foreach (var drive in drives)
             {
-                LocalDrive.Add(new DriveItem()
+                LocalDrive.Add(new LocalFileItem()
                 {
                     Path = drive,
                     Name = drive,
+                    Extension = "DRIVE",
                     IsFolder = true
                 });
 
-
-                RemoteL.Add(new DriveItem1()
+                RemoteL.Add(new RemoteFileItem()
                 {
                     Path = drive,
                     Name = drive,
-                    Items = new ObservableCollection<DriveItem1>() { new DriveItem1() }
+                    Items = new ObservableCollection<RemoteFileItem>() { new RemoteFileItem() }
                 });
-            }
-
-            localPath = "/";
-        }
-
-        public void Looo(DriveItem1 i)
-        {
-            i.Items.Clear();
-            var dirs = Directory.GetDirectories(i.Path);
-            foreach (var dir in dirs)
-            {
-                var dinfo = new DirectoryInfo(dir);
-                if (!dinfo.Attributes.HasFlag(FileAttributes.Hidden))
-                {
-                    i.Items.Add(new DriveItem1()
-                    {
-                        Path = dir,
-                        Name = dinfo.Name,
-                        Items = new ObservableCollection<DriveItem1>() { new DriveItem1() }
-                    });
-                }
             }
         }
 
@@ -126,12 +84,14 @@ namespace FreeLeaf.ViewModel
             LocalDrive.Clear();
 
             var di = new DirectoryInfo(path);
-            //if (di.Attributes.HasFlag(FileAttributes.Hidden)) return;
 
             var dirs = di.EnumerateDirectories();
             foreach (var dir in dirs)
             {
-                LocalDrive.Add(new DriveItem()
+                if(dir.Attributes.HasFlag(FileAttributes.Hidden |
+                    FileAttributes.System)) continue;
+
+                LocalDrive.Add(new LocalFileItem()
                 {
                     Model = this,
                     Path = dir.FullName,
@@ -145,7 +105,10 @@ namespace FreeLeaf.ViewModel
             var files = di.EnumerateFiles();
             foreach (var file in files)
             {
-                LocalDrive.Add(new DriveItem()
+                if (file.Attributes.HasFlag(FileAttributes.Hidden |
+                       FileAttributes.System)) continue;
+
+                LocalDrive.Add(new LocalFileItem()
                 {
                     Model = this,
                     Path = file.FullName,
@@ -158,11 +121,37 @@ namespace FreeLeaf.ViewModel
             }
         }
 
+        public void NavigateLocalUp()
+        {
+            var info = Directory.GetParent(localPath);
+            if (info == null) NavigateLocalHome();
+            else NavigateLocal(info.FullName);
+        }
+
+        public void PopulateRemoteFolder(RemoteFileItem item)
+        {
+            remotePath = item.Path;
+            item.Items.Clear();
+
+            var dirs = Directory.GetDirectories(item.Path);
+            foreach (var dir in dirs)
+            {
+                var info = new DirectoryInfo(dir);
+                item.Items.Add(new RemoteFileItem()
+                {
+                    Path = dir,
+                    Name = info.Name,
+                    Items = new ObservableCollection<RemoteFileItem>() { new RemoteFileItem() }
+                });
+            }
+        }
+
         public string SizeToString(long size)
         {
             string[] sizes = { "B", "KB", "MB", "GB" };
             double len = size;
             int order = 0;
+
             while (len >= 1024 && order + 1 < sizes.Length)
             {
                 order++;
@@ -171,28 +160,10 @@ namespace FreeLeaf.ViewModel
 
             return string.Format("{0:0.##} {1}", len, sizes[order]);
         }
-
-        public void NavigateLocalUp()
-        {
-            var info = Directory.GetParent(localPath);
-            if (info == null)
-            {
-                NavigateLocalHome();
-            }
-            else
-            {
-                NavigateLocal(info.FullName);
-            }
-        }
     }
 
-    public class DriveItem1 : ObservableObject
+    public class RemoteFileItem : ObservableObject
     {
-        public DriveItem1()
-        {
-            items = new ObservableCollection<DriveItem1>();
-        }
-
         private string path;
         public string Path
         {
@@ -215,8 +186,8 @@ namespace FreeLeaf.ViewModel
             }
         }
 
-        private ObservableCollection<DriveItem1> items;
-        public ObservableCollection<DriveItem1> Items
+        private ObservableCollection<RemoteFileItem> items;
+        public ObservableCollection<RemoteFileItem> Items
         {
             get { return items; }
             set
@@ -227,7 +198,7 @@ namespace FreeLeaf.ViewModel
         }
     }
 
-    public class DriveItem : ObservableObject
+    public class LocalFileItem : ObservableObject
     {
         public TransferViewModel Model;
 
@@ -295,7 +266,7 @@ namespace FreeLeaf.ViewModel
                 if (!this.IsFolder)
                 {
                     destination = value;
-                    IsChecked = !string.IsNullOrEmpty(destination);
+                    IsInQueue = !string.IsNullOrEmpty(destination);
                     RaisePropertyChanged("Destination");
                 }
             }
@@ -312,8 +283,9 @@ namespace FreeLeaf.ViewModel
             }
         }
 
-        public bool IsChecked
+        public bool IsInQueue
         {
+            get { return Model.Queue.Contains(this); }
             set
             {
                 if (value)
