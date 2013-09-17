@@ -21,6 +21,18 @@ namespace FreeLeaf.Model
     public class TransferViewModel : ViewModelBase, IDropTarget
     {
         private DeviceItem device;
+        public bool forceStop;
+
+        private bool isBusy;
+        public bool IsBusy
+        {
+            get { return isBusy; }
+            set
+            {
+                isBusy = value;
+                RaisePropertyChanged("IsBusy");
+            }
+        }
 
         private string localPath;
         public string LocalPath
@@ -213,13 +225,11 @@ namespace FreeLeaf.Model
             return Task.Run(() =>
             {
                 var info = new FileInfo(item.Path);
+                var size = info.Length;
 
-                SendMessage(string.Format("send:{0}:{1}:{2}", item.Name, item.Destination, info.Length));
-
-                var stream = info.OpenRead();
+                SendMessage(string.Format("send:{0}:{1}:{2}", item.Name, item.Destination, size));
 
                 TcpClient client = new TcpClient();
-
                 try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
                 catch { return; }
 
@@ -229,27 +239,26 @@ namespace FreeLeaf.Model
                 long bytesTotal = 0, lastRead = 0, lastLeft = 0;
                 byte[] buffer = new byte[8192];
 
-
                 var stopwatch = new Stopwatch();
                 stopwatch.Start();
 
-
+                var stream = info.OpenRead();
                 while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
                 {
+                    if (forceStop) break;
+
                     ns.Write(buffer, 0, bytesRead);
                     bytesTotal += bytesRead;
                     lastRead += bytesRead;
 
                     long diff = stopwatch.ElapsedMilliseconds;
-
                     if (diff >= 1000)
                     {
                         item.ProgressSize = SizeToString(bytesTotal);
-                        item.Progress = 100 * bytesTotal / (double)info.Length;
-
+                        item.Progress = 100 * bytesTotal / (double)size;
                         item.Speed = SizeToString(lastRead) + "/s";
 
-                        double t1 = (info.Length - bytesTotal) / (double)lastRead;
+                        double t1 = (size - bytesTotal) / (double)lastRead;
                         double t2 = diff / (double)1000;
                         long timeLeft = (int)(t1 / t2) + 1;
 
@@ -258,8 +267,6 @@ namespace FreeLeaf.Model
                         lastLeft = timeLeft;
 
                         item.TimeLeft = getTimeToETA(timeLeft);
-
-                        
 
                         lastRead = 0;
                         stopwatch.Restart();
@@ -275,32 +282,53 @@ namespace FreeLeaf.Model
         {
             return Task.Run(() =>
             {
-                var size = SendMessageWithReceive("receive:" + item.Path);
-                long totalSize = long.Parse(size);
+                var value = SendMessageWithReceive("receive:" + item.Path);
+                long size = long.Parse(value);
 
                 TcpClient client = new TcpClient();
-
                 try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
                 catch { return; }
 
                 NetworkStream ns = client.GetStream();
-
                 byte[] buffer = Encoding.UTF8.GetBytes("receive");
                 ns.Write(buffer, 0, buffer.Length);
 
-
-                var stream = File.OpenWrite(Path.Combine(item.Destination, item.Name));
-
                 int bytesRead = 0;
-                long bytesTotal = 0;
+                long bytesTotal = 0, lastRead = 0, lastLeft = 0;
                 buffer = new byte[8192];
 
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                var stream = File.OpenWrite(Path.Combine(item.Destination, item.Name));
                 while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
                 {
+                    if (forceStop) break;
+
                     stream.Write(buffer, 0, bytesRead);
                     bytesTotal += bytesRead;
+                    lastRead += bytesRead;
 
-                    item.Progress = 100 * bytesTotal / (double)totalSize;
+                    long diff = stopwatch.ElapsedMilliseconds;
+                    if (diff >= 1000)
+                    {
+                        item.ProgressSize = SizeToString(bytesTotal);
+                        item.Progress = 100 * bytesTotal / (double)size;
+                        item.Speed = SizeToString(lastRead) + "/s";
+
+                        double t1 = (size - bytesTotal) / (double)lastRead;
+                        double t2 = diff / (double)1000;
+                        long timeLeft = (int)(t1 / t2) + 1;
+
+                        if (lastLeft == 0) lastLeft = timeLeft;
+                        if (timeLeft > lastLeft) timeLeft = lastLeft + 1;
+                        lastLeft = timeLeft;
+
+                        item.TimeLeft = getTimeToETA(timeLeft);
+
+                        lastRead = 0;
+                        stopwatch.Restart();
+                    }
                 }
 
                 stream.Close();
@@ -446,12 +474,6 @@ namespace FreeLeaf.Model
         {
             if (dropInfo.DragInfo.VisualSource != dropInfo.VisualTarget)
             {
-                if (dropInfo.TargetItem is FileItem)
-                {
-                    var dropItem = dropInfo.TargetItem as FileItem;
-                    if (!dropItem.IsFolder) return;
-                }
-
                 dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
                 dropInfo.Effects = DragDropEffects.Copy;
             }
@@ -461,7 +483,7 @@ namespace FreeLeaf.Model
         {
             string path = null;
 
-            if (dropInfo.TargetItem is FileItem)
+            if (dropInfo.TargetItem is FileItem && (dropInfo.TargetItem as FileItem).IsFolder)
             {
                 var dropItem = dropInfo.TargetItem as FileItem;
                 path = dropItem.Path;

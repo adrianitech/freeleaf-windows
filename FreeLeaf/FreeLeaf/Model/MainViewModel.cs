@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
@@ -20,6 +21,8 @@ namespace FreeLeaf.Model
         public static string[] Colors = new string[] { "#41bdbd", "#d76d93", "#7c4a81", "#eacb5f" };
 
         private UdpClient udpClient;
+
+        private DispatcherTimer timer1;
 
         private ObservableCollection<DeviceItem> items;
         public ObservableCollection<DeviceItem> Items
@@ -39,87 +42,77 @@ namespace FreeLeaf.Model
             if (IsInDesignMode) return;
 
             udpClient = new UdpClient(8888);
-            udpClient.BeginReceive(new AsyncCallback(ReceiveDeviceInfo), null);
 
-            //new Thread(ReceiveDeviceInfo).Start();
-            new Thread(CheckDeviceAvailability).Start();
-        }
+            timer1 = new DispatcherTimer();
+            timer1.Interval = TimeSpan.FromSeconds(1);
+            timer1.Tick += timer1_Tick;
+            timer1.Start();
 
-        private void CheckDeviceAvailability()
-        {
-            while (true)
+            Task.Run(() =>
             {
-                Thread.Sleep(1000);
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                var endpoint = new IPEndPoint(IPAddress.Any, 8888);
+
+                while (true)
                 {
-                    for (int i = 0; i < items.Count; i++)
+                    var bytes = udpClient.Receive(ref endpoint);
+                    var data = Encoding.UTF8.GetString(bytes);
+                    var ip = endpoint.Address.ToString();
+
+                    var array = (JArray)JsonConvert.DeserializeObject(data);
+                    var id = array[0].Value<string>();
+
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        if (items[i].ID == null) continue;
-                        if (items[i].LastUpdated >= 6)
+                        var item = items.SingleOrDefault((i) =>
                         {
-                            items.RemoveAt(i);
-                            i--;
+                            if (i.ID == null) return false;
+                            return i.ID.Equals(id);
+                        });
+
+                        if (item == null)
+                        {
+                            var newItem = new DeviceItem()
+                            {
+                                ID = id,
+                                Username = array[1].Value<string>(),
+                                Device = array[2].Value<string>(),
+                                Battery = array[3].Value<string>(),
+                                Storage = array[4].Value<string>(),
+                                Address = ip
+                            };
+
+                            newItem.Color = Colors[Getss(newItem.ID)];
+                            items.Insert(0, newItem);
                         }
                         else
                         {
-                            items[i].LastUpdated++;
+                            item.Username = array[1].Value<string>();
+                            item.Battery = array[3].Value<string>();
+                            item.Storage = array[4].Value<string>();
+                            item.LastUpdated = 0;
                         }
-                    }
-                }), DispatcherPriority.Background);
-            }
+                    }), DispatcherPriority.Background);
+
+                    Task.Delay(100);
+                }
+            });
         }
 
-        private void ReceiveDeviceInfo(IAsyncResult ar)
+        private void timer1_Tick(object sender, EventArgs e)
         {
-            var endpoint = new IPEndPoint(IPAddress.Any, 8888);
-            var bytes = udpClient.EndReceive(ar, ref endpoint);
-            var data = Encoding.UTF8.GetString(bytes);
-            var ip = endpoint.Address.ToString();
-
-            var array = (JArray)JsonConvert.DeserializeObject(data);
-            var id = array[0].Value<string>();
-
-            var item = items.SingleOrDefault((i) =>
+            for (int i = 0; i < items.Count; i++)
             {
-                if (i.ID == null) return false;
-                return i.ID.Equals(id);
-            });
-
-            //Console.WriteLine("[{0:HH:mm:ss}] Device info received!", DateTime.Now);
-
-            if (item == null)
-            {
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                if (items[i].ID == null) continue;
+                if (items[i].LastUpdated >= 6)
                 {
-                    var newItem = new DeviceItem()
-                    {
-                        ID = id,
-                        Username = array[1].Value<string>(),
-                        Device = array[2].Value<string>(),
-                        Battery = array[3].Value<string>(),
-                        Storage = array[4].Value<string>(),
-                        Address = ip
-                    };
-
-                    newItem.Color = Colors[Getss(newItem.ID)];
-
-                    items.Insert(0, newItem);
-                }), DispatcherPriority.Background);
-            }
-            else
-            {
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    items.RemoveAt(i);
+                    i--;
+                }
+                else
                 {
-                    item.LastUpdated = 0;
-                    item.Username = array[1].Value<string>();
-                    item.Device = array[2].Value<string>();
-                    item.Battery = array[3].Value<string>();
-                    item.Storage = array[4].Value<string>();
-                    item.Address = ip;
-                }), DispatcherPriority.Background);
+                    items[i].LastUpdated++;
+                }
             }
-
-            udpClient.BeginReceive(new AsyncCallback(ReceiveDeviceInfo), null);
         }
 
         private int Getss(string id)
