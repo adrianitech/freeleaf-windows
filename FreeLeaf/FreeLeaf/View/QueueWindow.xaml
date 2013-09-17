@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:model="clr-namespace:FreeLeaf.Model"
         DataContext="{Binding Path=Transfer, Source={StaticResource Locator}}"
-        Title="Queue" Height="600" Width="450" WindowStartupLocation="CenterOwner" Background="White"
-        FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True" ResizeMode="CanMinimize">
+        Title="Queue" Height="600" Width="450" MinWidth="450" MinHeight="400" WindowStartupLocation="CenterOwner" Background="White"
+        FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True" ResizeMode="CanResize" ShowInTaskbar="False">
     
     <Window.Resources>
         <model:NegateBooleanConverter x:Key="NegateBooleanConverter" />
@@ -43,22 +43,18 @@
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Margin="10" Orientation="Vertical">
                                             <TextBlock Foreground="#333333" FontSize="12" TextTrimming="CharacterEllipsis">
-                                                File name: <Run Text="{Binding Path=Name, Mode=OneWay}" Foreground="#e4715f" /><LineBreak />
-                                                Destination: <Run Text="{Binding Path=Destination, Mode=OneWay}" Foreground="#e4715f" />
+                                                File name: <Run Text="{Binding Path=Name, Mode=OneWay}" /><LineBreak />
+                                                Destination: <Run Text="{Binding Path=Destination, Mode=OneWay}" />
                                             </TextBlock>
                                             <StackPanel Name="StackProgress">
-                                                <TextBlock Margin="0,3,0,0" Foreground="#333333" FontSize="10">
-                                                    Progress: <Run Text="{Binding Path=ProgressSize, Mode=OneWay}" />/<Run Text="{Binding Path=Size, Mode=OneWay}" /> (<Run Text="{Binding Path=Speed, Mode=OneWay}" />)<LineBreak />
-                                                    Timeleft: <Run Text="{Binding Path=TimeLeft, Mode=OneWay}" />
-                                                </TextBlock>
-                                                <ProgressBar Margin="0,5,0,0" Width="250" Height="5" Value="{Binding Progress}" HorizontalAlignment="Left">
+                                                <ProgressBar Margin="0,6,0,2" Width="250" Height="4" Value="{Binding Progress}" HorizontalAlignment="Left">
                                                     <ProgressBar.Style>
                                                         <Style TargetType="ProgressBar">
                                                             <Setter Property="Template">
                                                                 <Setter.Value>
                                                                     <ControlTemplate TargetType="ProgressBar">
                                                                         <Grid>
-                                                                            <Border Name="PART_Track" Background="#ededed" />
+                                                                            <Border Name="PART_Track" Background="#FFE2E2E2" />
                                                                             <Border x:Name="PART_Indicator" Background="#e4715f" HorizontalAlignment="Left" />
                                                                         </Grid>
                                                                     </ControlTemplate>
@@ -67,6 +63,10 @@
                                                         </Style>
                                                     </ProgressBar.Style>
                                                 </ProgressBar>
+                                                <TextBlock Foreground="#333333" FontSize="10">
+                                                    Progress: <Run Text="{Binding Path=ProgressSize, Mode=OneWay}" />/<Run Text="{Binding Path=Size, Mode=OneWay}" /> (<Run Text="{Binding Path=Speed, Mode=OneWay}" />)<LineBreak />
+                                                    Time left: <Run Text="{Binding Path=TimeLeft, Mode=OneWay}" />
+                                                </TextBlock>
                                             </StackPanel>
                                         </StackPanel>
                                         <Button Name="Button" Margin="0,0,10,0" Grid.Column="1" Content="Delete" Visibility="Collapsed" VerticalAlignment="Center" Click="Button_Click_2" />
@@ -95,12 +95,12 @@
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Name="Border" Padding="15,6" Background="#FFCBCBCB">
+                                    <Border Name="Border" Padding="15,6" Background="#FFE4E4E4">
                                         <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="#19C7C7C7" />
+                                            <Setter TargetName="Border" Property="Background" Value="#FFC7C7C7" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
