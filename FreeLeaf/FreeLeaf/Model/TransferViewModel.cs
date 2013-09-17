@@ -5,11 +5,13 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -162,72 +164,147 @@ namespace FreeLeaf.Model
             }
         }
 
-        public void SendFile(FileItem item)
+
+        private String getTimeToETA(long timeLeft)
         {
-            var info = new FileInfo(item.Path);
-            SendMessage(string.Format("send:{0}:{1}:{2}",
-                item.Name,
-                item.Destination,
-                info.Length));
+            String msgLeft;
 
-            var stream = info.OpenRead();
-
-            TcpClient client = new TcpClient();
-
-            try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
-            catch { return; }
-
-            NetworkStream ns = client.GetStream();
-
-            int bytesRead = 0;
-
-            long re = 0;
-            byte[] buffer = new byte[8192];
-
-            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+            if (timeLeft < 60)
             {
-                ns.Write(buffer, 0, bytesRead);
-                re += bytesRead;
-
-                //Console.WriteLine("Sending file... {0}/{1} ({2:0.00}%)", SizeToString(re), SizeToString(info.Length), 100 * re / (double)info.Length);
+                if (timeLeft == 1)
+                {
+                    msgLeft = " second left";
+                }
+                else
+                {
+                    msgLeft = " seconds left";
+                }
+            }
+            else if (timeLeft < 3600)
+            {
+                timeLeft /= 60;
+                if (timeLeft == 1)
+                {
+                    msgLeft = " minute left";
+                }
+                else
+                {
+                    msgLeft = " minutes left";
+                }
+            }
+            else
+            {
+                timeLeft /= 3600;
+                if (timeLeft == 1)
+                {
+                    msgLeft = " hour left";
+                }
+                else
+                {
+                    msgLeft = " hours left";
+                }
             }
 
-
-            client.Close();
-            stream.Close();
+            return timeLeft + msgLeft;
         }
 
-        public void ReceiveFile(FileItem item)
+        public Task SendFile(FileItem item)
         {
-            var size = SendMessageWithReceive("receive:" + item.Path);
-            long s = long.Parse(size);
-
-            TcpClient client = new TcpClient();
-
-            try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
-            catch { return; }
-
-            NetworkStream ns = client.GetStream();
-
-            byte[] buffer = Encoding.UTF8.GetBytes("receive");
-            ns.Write(buffer, 0, buffer.Length);
-
-
-            var stream = File.OpenWrite(Path.Combine(item.Destination, item.Name));
-
-            int bytesRead = 0;
-            long re = 0;
-            buffer = new byte[8192];
-
-            while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+            return Task.Run(() =>
             {
-                stream.Write(buffer, 0, bytesRead);
-                re += bytesRead;
+                var info = new FileInfo(item.Path);
 
-                //Console.WriteLine("Receiving file... {0}/{1} ({2:0.00}%)", SizeToString(re), SizeToString(s), 100 * re / (double)s);
-            }
+                SendMessage(string.Format("send:{0}:{1}:{2}", item.Name, item.Destination, info.Length));
 
-            stream.Close();
+                var stream = info.OpenRead();
+
+                TcpClient client = new TcpClient();
+
+                try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
+                catch { return; }
+
+                NetworkStream ns = client.GetStream();
+
+                int bytesRead = 0;
+                long bytesTotal = 0, lastRead = 0, lastLeft = 0;
+                byte[] buffer = new byte[8192];
+
+
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+
+                while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    ns.Write(buffer, 0, bytesRead);
+                    bytesTotal += bytesRead;
+                    lastRead += bytesRead;
+
+                    long diff = stopwatch.ElapsedMilliseconds;
+
+                    if (diff >= 1000)
+                    {
+                        item.ProgressSize = SizeToString(bytesTotal);
+                        item.Progress = 100 * bytesTotal / (double)info.Length;
+
+                        item.Speed = SizeToString(lastRead) + "/s";
+
+                        double t1 = (info.Length - bytesTotal) / (double)lastRead;
+                        double t2 = diff / (double)1000;
+                        long timeLeft = (int)(t1 / t2) + 1;
+
+                        if (lastLeft == 0) lastLeft = timeLeft;
+                        if (timeLeft > lastLeft) timeLeft = lastLeft + 1;
+                        lastLeft = timeLeft;
+
+                        item.TimeLeft = getTimeToETA(timeLeft);
+
+                        
+
+                        lastRead = 0;
+                        stopwatch.Restart();
+                    }
+                }
+
+                client.Close();
+                stream.Close();
+            });
+        }
+
+        public Task ReceiveFile(FileItem item)
+        {
+            return Task.Run(() =>
+            {
+                var size = SendMessageWithReceive("receive:" + item.Path);
+                long totalSize = long.Parse(size);
+
+                TcpClient client = new TcpClient();
+
+                try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
+                catch { return; }
+
+                NetworkStream ns = client.GetStream();
+
+                byte[] buffer = Encoding.UTF8.GetBytes("receive");
+                ns.Write(buffer, 0, buffer.Length);
+
+
+                var stream = File.OpenWrite(Path.Combine(item.Destination, item.Name));
+
+                int bytesRead = 0;
+                long bytesTotal = 0;
+                buffer = new byte[8192];
+
+                while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    stream.Write(buffer, 0, bytesRead);
+                    bytesTotal += bytesRead;
+
+                    item.Progress = 100 * bytesTotal / (double)totalSize;
+                }
+
+                stream.Close();
+            });
         }
 
         public async void NavigateLocal(string path)
@@ -389,7 +466,7 @@ namespace FreeLeaf.Model
                 var dropItem = dropInfo.TargetItem as FileItem;
                 path = dropItem.Path;
             }
-            else if(dropInfo.VisualTarget is ListView)
+            else if (dropInfo.VisualTarget is ListView)
             {
                 var dropItem = dropInfo.VisualTarget as ListView;
                 path = dropItem.Tag.ToString();
@@ -508,6 +585,50 @@ namespace FreeLeaf.Model
             {
                 isRemote = value;
                 RaisePropertyChanged("IsRemote");
+            }
+        }
+
+        private double progress = 0;
+        public double Progress
+        {
+            get { return progress; }
+            set
+            {
+                progress = value;
+                RaisePropertyChanged("Progress");
+            }
+        }
+
+        private string progressSize;
+        public string ProgressSize
+        {
+            get { return progressSize; }
+            set
+            {
+                progressSize = value;
+                RaisePropertyChanged("ProgressSize");
+            }
+        }
+
+        private string speed;
+        public string Speed
+        {
+            get { return speed; }
+            set
+            {
+                speed = value;
+                RaisePropertyChanged("Speed");
+            }
+        }
+
+        private string timeLeft;
+        public string TimeLeft
+        {
+            get { return timeLeft; }
+            set
+            {
+                timeLeft = value;
+                RaisePropertyChanged("TimeLeft");
             }
         }
 

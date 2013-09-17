@@ -65,16 +65,13 @@ namespace FreeLeaf.View
 
         private void Hyperlink_Click_1(object sender, RoutedEventArgs e)
         {
-            foreach (var item in model.Queue)
+            var queue = new QueueWindow() { Owner = this };
+            queue.ShowDialog();
+            /*foreach (var item in model.Queue)
             {
                 if (!item.IsRemote) model.SendFile(item);
                 else model.ReceiveFile(item);
-            }
-        }
-
-        private void Hyperlink_Click_2(object sender, RoutedEventArgs e)
-        {
-            model.Queue.Clear();
+            }*/
         }
     }
 }

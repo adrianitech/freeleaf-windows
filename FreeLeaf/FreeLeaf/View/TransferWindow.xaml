@@ -21,10 +21,6 @@
                     </Button>
                     <Rectangle Margin="0,5" Width="1" Fill="#FFCBCBCB" />
                 </StackPanel>
-                <Button Style="{StaticResource ToolbarButtonStyle}" Click="ButtonFolderUp_Click1" HorizontalAlignment="Center">
-                    <Path Data="F1 M 34,57L 42,57L 42,32.25L 52,42.25L 52,31.75L 38,17.75L 24,31.75L 24,42.25L 34,32.25L 34,57 Z"
-        			      Stretch="Uniform" Fill="#333333" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                </Button>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Rectangle Margin="0,5" Width="1" Fill="#FFCBCBCB" />
                     <Button Style="{StaticResource ToolbarButtonStyle}" Click="ButtonFolderUp_Click1">
@@ -122,7 +118,7 @@
                     <Run Text="{Binding ElementName=ListLocal, Path=SelectedItems.Count, Mode=OneWay}" />/<Run Text="{Binding Items.Count, ElementName=ListLocal, Mode=OneWay}" /> item(s) selected
                 </TextBlock>
                 <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Run Text="{Binding Path=Queue.Count, Mode=OneWay}" /> item(s) in queue (<Hyperlink Click="Hyperlink_Click_1">Start</Hyperlink>/<Hyperlink Click="Hyperlink_Click_2">Clear</Hyperlink>)
+                    <Hyperlink Click="Hyperlink_Click_1"><Run Text="{Binding Path=Queue.Count, Mode=OneWay}" /> item(s) in queue</Hyperlink>
                 </TextBlock>
                 <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right">
                     <Run Text="{Binding ElementName=ListLocal1, Path=SelectedItems.Count, Mode=OneWay}" />/<Run Text="{Binding Items.Count, ElementName=ListLocal1, Mode=OneWay}" /> item(s) selected
