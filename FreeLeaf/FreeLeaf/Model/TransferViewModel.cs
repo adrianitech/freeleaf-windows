@@ -1,19 +1,49 @@
 ﻿using GalaSoft.MvvmLight;
+using GongSolutions.Wpf.DragDrop;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 
 namespace FreeLeaf.Model
 {
-    public class TransferViewModel : ViewModelBase
+    public class TransferViewModel : ViewModelBase, IDropTarget
     {
-        private string localPath;
+        private DeviceItem device;
 
-        private ObservableCollection<LocalFileItem> queue;
-        public ObservableCollection<LocalFileItem> Queue
+        private string localPath;
+        public string LocalPath
+        {
+            get { return localPath; }
+            set
+            {
+                localPath = value;
+                RaisePropertyChanged("LocalPath");
+            }
+        }
+
+        private string remotePath;
+        public string RemotePath
+        {
+            get { return remotePath; }
+            set
+            {
+                remotePath = value;
+                RaisePropertyChanged("RemotePath");
+            }
+        }
+
+        private ObservableCollection<FileItem> queue;
+        public ObservableCollection<FileItem> Queue
         {
             get { return queue; }
             set
@@ -23,19 +53,19 @@ namespace FreeLeaf.Model
             }
         }
 
-        private ObservableCollection<RemoteFileItem> removeFiles;
-        public ObservableCollection<RemoteFileItem> RemoteL
+        private ObservableCollection<FileItem> remoteFiles;
+        public ObservableCollection<FileItem> RemoteFiles
         {
-            get { return removeFiles; }
+            get { return remoteFiles; }
             set
             {
-                removeFiles = value;
+                remoteFiles = value;
                 RaisePropertyChanged("RemoteL");
             }
         }
 
-        private ObservableCollection<LocalFileItem> localFiles;
-        public ObservableCollection<LocalFileItem> LocalDrive
+        private ObservableCollection<FileItem> localFiles;
+        public ObservableCollection<FileItem> LocalDrive
         {
             get { return localFiles; }
             set
@@ -60,33 +90,56 @@ namespace FreeLeaf.Model
         {
             if (IsInDesignMode) return;
 
-            queue = new ObservableCollection<LocalFileItem>();
-            localFiles = new ObservableCollection<LocalFileItem>();
-            removeFiles = new ObservableCollection<RemoteFileItem>();
+            queue = new ObservableCollection<FileItem>();
+            localFiles = new ObservableCollection<FileItem>();
+            remoteFiles = new ObservableCollection<FileItem>();
 
             NavigateLocalHome();
-            RemoteL.Add(new RemoteFileItem()
+        }
+
+        private void SendMessage(string message)
+        {
+            TcpClient client = new TcpClient();
+
+            try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
+            catch { return; }
+
+            NetworkStream ns = client.GetStream();
+
+            byte[] buffer = Encoding.UTF8.GetBytes(message);
+            ns.Write(buffer, 0, buffer.Length);
+
+            client.Close();
+        }
+
+        private string SendMessageWithReceive(string message)
+        {
+            TcpClient client = new TcpClient();
+
+            try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
+            catch { return null; }
+
+            NetworkStream ns = client.GetStream();
+
+            byte[] buffer = Encoding.UTF8.GetBytes(message);
+            ns.Write(buffer, 0, buffer.Length);
+
+            buffer = new byte[4096];
+            MemoryStream ms = new MemoryStream();
+
+            int bytesRead = 0;
+
+            while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
             {
-                Path = "D:\\",
-                Name = "sdcard",
-                Items = new ObservableCollection<RemoteFileItem>()
-                {
-                    new RemoteFileItem()
-                    {
-                        Path = "D:\\",
-                        Name = "Local Disk (D:)",
-                        Items = new ObservableCollection<RemoteFileItem>()
-                        {
-                            new RemoteFileItem()
-                        }
-                    }
-                }
-            });
+                ms.Write(buffer, 0, bytesRead);
+            }
+
+            return Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Length);
         }
 
         public void NavigateLocalHome()
         {
-            localPath = "/";
+            LocalPath = "/";
             LocalDrive.Clear();
 
             var drives = DriveInfo.GetDrives();
@@ -94,7 +147,7 @@ namespace FreeLeaf.Model
             {
                 if (!drive.IsReady) continue;
 
-                LocalDrive.Add(new LocalFileItem()
+                LocalDrive.Add(new FileItem()
                 {
                     Path = drive.Name,
                     Name = string.Format("{0} ({1})",
@@ -109,10 +162,78 @@ namespace FreeLeaf.Model
             }
         }
 
+        public void SendFile(FileItem item)
+        {
+            var info = new FileInfo(item.Path);
+            SendMessage(string.Format("send:{0}:{1}:{2}",
+                item.Name,
+                item.Destination,
+                info.Length));
+
+            var stream = info.OpenRead();
+
+            TcpClient client = new TcpClient();
+
+            try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
+            catch { return; }
+
+            NetworkStream ns = client.GetStream();
+
+            int bytesRead = 0;
+
+            long re = 0;
+            byte[] buffer = new byte[8192];
+
+            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                ns.Write(buffer, 0, bytesRead);
+                re += bytesRead;
+
+                //Console.WriteLine("Sending file... {0}/{1} ({2:0.00}%)", SizeToString(re), SizeToString(info.Length), 100 * re / (double)info.Length);
+            }
+
+
+            client.Close();
+            stream.Close();
+        }
+
+        public void ReceiveFile(FileItem item)
+        {
+            var size = SendMessageWithReceive("receive:" + item.Path);
+            long s = long.Parse(size);
+
+            TcpClient client = new TcpClient();
+
+            try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
+            catch { return; }
+
+            NetworkStream ns = client.GetStream();
+
+            byte[] buffer = Encoding.UTF8.GetBytes("receive");
+            ns.Write(buffer, 0, buffer.Length);
+
+
+            var stream = File.OpenWrite(Path.Combine(item.Destination, item.Name));
+
+            int bytesRead = 0;
+            long re = 0;
+            buffer = new byte[8192];
+
+            while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                stream.Write(buffer, 0, bytesRead);
+                re += bytesRead;
+
+                //Console.WriteLine("Receiving file... {0}/{1} ({2:0.00}%)", SizeToString(re), SizeToString(s), 100 * re / (double)s);
+            }
+
+            stream.Close();
+        }
+
         public async void NavigateLocal(string path)
         {
             Status = "Populating folder";
-            localPath = path;
+            LocalPath = path;
             LocalDrive.Clear();
 
             await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -126,7 +247,7 @@ namespace FreeLeaf.Model
                     if (dir.Attributes.HasFlag(FileAttributes.Hidden |
                         FileAttributes.System)) continue;
 
-                    LocalDrive.Add(new LocalFileItem()
+                    LocalDrive.Add(new FileItem()
                     {
                         Model = this,
                         Path = dir.FullName,
@@ -146,7 +267,7 @@ namespace FreeLeaf.Model
                     var item = Queue.FirstOrDefault((t) => t.Path.Equals(file.FullName));
                     LocalDrive.Add(item != null ?
                         item :
-                        new LocalFileItem()
+                        new FileItem()
                         {
                             Model = this,
                             Path = file.FullName,
@@ -164,24 +285,56 @@ namespace FreeLeaf.Model
 
         public void NavigateLocalUp()
         {
-            var info = Directory.GetParent(localPath);
+            var info = Directory.GetParent(LocalPath);
             if (info == null) NavigateLocalHome();
             else NavigateLocal(info.FullName);
         }
 
-        public void PopulateRemoteFolder(RemoteFileItem item)
+        public void NavigateRemoteUp()
         {
-            item.Items.Clear();
+            var parent = SendMessageWithReceive("up:" + RemotePath);
+            PopulateRemoteFolder(parent);
+        }
 
-            var dirs = Directory.GetDirectories(item.Path);
-            foreach (var dir in dirs)
+        public void PopulateRemoteFolder(string path)
+        {
+            RemotePath = path;
+            remoteFiles.Clear();
+
+            var json = SendMessageWithReceive("list:" + path);
+            JArray array;
+
+            try { array = JArray.Parse(json); }
+            catch { return; }
+
+            foreach (var obj in array)
             {
-                var info = new DirectoryInfo(dir);
-                item.Items.Add(new RemoteFileItem()
+                var name = obj.Value<string>("name");
+                var rpath = obj.Value<string>("path");
+                var folder = obj.Value<bool>("folder");
+
+                var size = "";
+                if (!folder)
                 {
-                    Path = dir,
-                    Name = info.Name,
-                    Items = new ObservableCollection<RemoteFileItem>() { new RemoteFileItem() }
+                    size = SizeToString(obj.Value<long>("size"));
+                }
+
+                var ext = Path.GetExtension(name).ToUpper();
+                if (ext.Length > 0) ext = ext.Substring(1);
+
+                var date = new DateTime(1970, 1, 1, 0, 0, 0);
+                date = date.AddMilliseconds(obj.Value<long>("date"));
+
+                RemoteFiles.Add(new FileItem()
+                {
+                    Model = this,
+                    Path = rpath,
+                    Name = name,
+                    Size = size,
+                    Extension = folder ? "FOLDER" : ext,
+                    Date = date.ToString(),
+                    IsFolder = folder,
+                    IsRemote = true
                 });
             }
         }
@@ -200,45 +353,69 @@ namespace FreeLeaf.Model
 
             return string.Format("{0:0.##} {1}", len, sizes[order]);
         }
+
+        public void SetDevice(DeviceItem item)
+        {
+            remoteFiles.Clear();
+            device = item;
+
+            var root = SendMessageWithReceive("root");
+            if (root == null) return;
+
+            PopulateRemoteFolder(root);
+        }
+
+        public void DragOver(IDropInfo dropInfo)
+        {
+            if (dropInfo.DragInfo.VisualSource != dropInfo.VisualTarget)
+            {
+                if (dropInfo.TargetItem is FileItem)
+                {
+                    var dropItem = dropInfo.TargetItem as FileItem;
+                    if (!dropItem.IsFolder) return;
+                }
+
+                dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
+                dropInfo.Effects = DragDropEffects.Copy;
+            }
+        }
+
+        public void Drop(IDropInfo dropInfo)
+        {
+            string path = null;
+
+            if (dropInfo.TargetItem is FileItem)
+            {
+                var dropItem = dropInfo.TargetItem as FileItem;
+                path = dropItem.Path;
+            }
+            else if(dropInfo.VisualTarget is ListView)
+            {
+                var dropItem = dropInfo.VisualTarget as ListView;
+                path = dropItem.Tag.ToString();
+            }
+
+            if (dropInfo.Data is List<FileItem>)
+            {
+                var dragItems = dropInfo.Data as List<FileItem>;
+                foreach (var item in dragItems)
+                {
+                    if (item.IsFolder) continue;
+                    item.Destination = path;
+                }
+            }
+            else if (dropInfo.Data is FileItem)
+            {
+                var dragItem = dropInfo.Data as FileItem;
+                if (!dragItem.IsFolder)
+                {
+                    dragItem.Destination = path;
+                }
+            }
+        }
     }
 
-    public class RemoteFileItem : ObservableObject
-    {
-        private string path;
-        public string Path
-        {
-            get { return path; }
-            set
-            {
-                path = value;
-                RaisePropertyChanged("Path");
-            }
-        }
-
-        private string name;
-        public string Name
-        {
-            get { return name; }
-            set
-            {
-                name = value;
-                RaisePropertyChanged("Name");
-            }
-        }
-
-        private ObservableCollection<RemoteFileItem> items;
-        public ObservableCollection<RemoteFileItem> Items
-        {
-            get { return items; }
-            set
-            {
-                items = value;
-                RaisePropertyChanged("Items");
-            }
-        }
-    }
-
-    public class LocalFileItem : ObservableObject
+    public class FileItem : ObservableObject
     {
         public TransferViewModel Model;
 
@@ -320,6 +497,17 @@ namespace FreeLeaf.Model
             {
                 isFolder = value;
                 RaisePropertyChanged("IsFolder");
+            }
+        }
+
+        private bool isRemote;
+        public bool IsRemote
+        {
+            get { return isRemote; }
+            set
+            {
+                isRemote = value;
+                RaisePropertyChanged("IsRemote");
             }
         }
 

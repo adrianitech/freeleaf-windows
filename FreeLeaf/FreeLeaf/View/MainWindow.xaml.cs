@@ -31,7 +31,7 @@ namespace FreeLeaf.View
                 if (item != null)
                 {
                     this.Hide();
-                    var transfer = new TransferWindow(model.SelectedItem);
+                    var transfer = new TransferWindow(item);
                     transfer.Closing += (sender1, e1) => { this.Show(); };
                     transfer.Show();
                 }

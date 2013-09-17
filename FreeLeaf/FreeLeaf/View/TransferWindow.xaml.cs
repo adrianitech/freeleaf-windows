@@ -1,6 +1,5 @@
 ﻿using FreeLeaf.Model;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace FreeLeaf.View
@@ -13,11 +12,17 @@ namespace FreeLeaf.View
         {
             InitializeComponent();
             model = (TransferViewModel)this.DataContext;
+            model.SetDevice(item);
         }
 
         private void ButtonFolderUp_Click(object sender, RoutedEventArgs e)
         {
             model.NavigateLocalUp();
+        }
+
+        private void ButtonFolderUp_Click1(object sender, RoutedEventArgs e)
+        {
+            model.NavigateRemoteUp();
         }
 
         private void ButtonSetDestination_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -28,7 +33,7 @@ namespace FreeLeaf.View
 
         private void ButtonClearDestination_Click(object sender, RoutedEventArgs e)
         {
-            foreach (LocalFileItem item in ListLocal.SelectedItems)
+            foreach (FileItem item in ListLocal.SelectedItems)
             {
                 item.Destination = null;
             }
@@ -36,7 +41,7 @@ namespace FreeLeaf.View
 
         private void LocalList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            var item = (e.OriginalSource as FrameworkElement).DataContext as LocalFileItem;
+            var item = (e.OriginalSource as FrameworkElement).DataContext as FileItem;
             if (item != null)
             {
                 if (item.IsFolder)
@@ -46,21 +51,30 @@ namespace FreeLeaf.View
             }
         }
 
-        private void RemoteListItem_Expanded(object sender, RoutedEventArgs e)
+        private void LocalList_MouseDoubleClick1(object sender, MouseButtonEventArgs e)
         {
-            var element = e.OriginalSource as TreeViewItem;
-            var item = element.Header as RemoteFileItem;
-            model.PopulateRemoteFolder(item);
+            var item = (e.OriginalSource as FrameworkElement).DataContext as FileItem;
+            if (item != null)
+            {
+                if (item.IsFolder)
+                {
+                    model.PopulateRemoteFolder(item.Path);
+                }
+            }
         }
 
-        private void RemoteList_Drop(object sender, DragEventArgs e)
+        private void Hyperlink_Click_1(object sender, RoutedEventArgs e)
         {
-            var dragItems = e.Data.GetData("LinkItems") as System.Collections.IList;
-            var overData = (e.OriginalSource as FrameworkElement).DataContext as RemoteFileItem;
-            foreach (LocalFileItem item in dragItems)
+            foreach (var item in model.Queue)
             {
-                item.Destination = overData.Path;
+                if (!item.IsRemote) model.SendFile(item);
+                else model.ReceiveFile(item);
             }
+        }
+
+        private void Hyperlink_Click_2(object sender, RoutedEventArgs e)
+        {
+            model.Queue.Clear();
         }
     }
 }

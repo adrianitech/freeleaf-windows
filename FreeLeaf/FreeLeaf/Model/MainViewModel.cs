@@ -17,11 +17,9 @@ namespace FreeLeaf.Model
 {
     public class MainViewModel : ViewModelBase
     {
-
         public static string[] Colors = new string[] { "#41bdbd", "#d76d93", "#7c4a81", "#eacb5f" };
 
         private UdpClient udpClient;
-        private CollectionView view;
 
         private ObservableCollection<DeviceItem> items;
         public ObservableCollection<DeviceItem> Items
@@ -29,78 +27,14 @@ namespace FreeLeaf.Model
             get { return items; }
         }
 
-        private bool isRefreshing;
-        public bool IsRefreshing
-        {
-            get { return isRefreshing; }
-            set
-            {
-                isRefreshing = value;
-                RaisePropertyChanged("IsRefreshing");
-            }
-        }
-
-        private DeviceItem selectedItem;
-        public DeviceItem SelectedItem
-        {
-            get { return selectedItem; }
-            set
-            {
-                selectedItem = value;
-                RaisePropertyChanged("SelectedItem");
-            }
-        }
-
         public MainViewModel()
         {
             items = new ObservableCollection<DeviceItem>();
-            view = (CollectionView)CollectionViewSource.GetDefaultView(items);
-
-            var r = new Random();
-
-            /*for (int i = 0; i < 20; i++)
-            {
-                items.Add(new DeviceItem()
-                {
-                    ID = i + "da",
-                    Username = "Adrian",
-                    Device = "Nexus 4",
-                    IsAvailable = true,
-                    IsPinned = i % 2 == 0,
-                    Color = MainViewModel.Colors[r.Next(Colors.Length)]
-                });
-            }*/
 
             items.Add(new DeviceItem()
             {
-                Username = "Connect via IP address",
-                Device = "Nexus 4",
-                IsAvailable = true
+                Username = "Connect via IP address"
             });
-
-
-            /*try
-            {
-                var json = File.ReadAllText("D:/pinned.txt");
-                var objs = (JArray)JsonConvert.DeserializeObject(json);
-                foreach (var obj in objs)
-                {
-                    items.Add(new DeviceItem()
-                    {
-                        Username = obj.Value<string>("Username"),
-                        Device = obj.Value<string>("Device"),
-                        Address = obj.Value<string>("Address"),
-                        ID = obj.Value<string>("ID"),
-                        IsPinned = true
-                    });
-                }
-            }
-            catch
-            {
-            }*/
-
-            var groupDescription = new PropertyGroupDescription("IsPinned");
-            view.GroupDescriptions.Add(groupDescription);
 
             if (IsInDesignMode) return;
 
@@ -109,21 +43,6 @@ namespace FreeLeaf.Model
 
             //new Thread(ReceiveDeviceInfo).Start();
             new Thread(CheckDeviceAvailability).Start();
-        }
-
-        public void SearchDevice(string query)
-        {
-            query = query.ToLower();
-            if (string.IsNullOrEmpty(query))
-            {
-                view.Filter = null;
-                return;
-            }
-            view.Filter = new Predicate<object>((o) =>
-            {
-                var item = (DeviceItem)o;
-                return item.Name.ToLower().Contains(query) || item.Address.Contains(query);
-            });
         }
 
         private void CheckDeviceAvailability()
@@ -136,18 +55,10 @@ namespace FreeLeaf.Model
                     for (int i = 0; i < items.Count; i++)
                     {
                         if (items[i].ID == null) continue;
-                        if (items[i].LastUpdated >= 2 * items[i].RefreshRate)
+                        if (items[i].LastUpdated >= 6)
                         {
-                            if (items[i].IsPinned)
-                            {
-                                items[i].IsAvailable = false;
-                            }
-                            else
-                            {
-                                if (SelectedItem == items[i]) SelectedItem = null;
-                                items.RemoveAt(i);
-                                i--;
-                            }
+                            items.RemoveAt(i);
+                            i--;
                         }
                         else
                         {
@@ -174,6 +85,8 @@ namespace FreeLeaf.Model
                 return i.ID.Equals(id);
             });
 
+            //Console.WriteLine("[{0:HH:mm:ss}] Device info received!", DateTime.Now);
+
             if (item == null)
             {
                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -181,21 +94,16 @@ namespace FreeLeaf.Model
                     var newItem = new DeviceItem()
                     {
                         ID = id,
-                        IsAvailable = true,
                         Username = array[1].Value<string>(),
                         Device = array[2].Value<string>(),
                         Battery = array[3].Value<string>(),
                         Storage = array[4].Value<string>(),
-                        Wifi = array[5].Value<string>(),
-                        RefreshRate = array[6].Value<int>() / 1000,
                         Address = ip
                     };
 
                     newItem.Color = Colors[Getss(newItem.ID)];
 
                     items.Insert(0, newItem);
-
-                    if (SelectedItem == null) SelectedItem = newItem;
                 }), DispatcherPriority.Background);
             }
             else
@@ -203,16 +111,11 @@ namespace FreeLeaf.Model
                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
                     item.LastUpdated = 0;
-                    item.IsAvailable = true;
                     item.Username = array[1].Value<string>();
                     item.Device = array[2].Value<string>();
                     item.Battery = array[3].Value<string>();
                     item.Storage = array[4].Value<string>();
-                    item.Wifi = array[5].Value<string>();
-                    item.RefreshRate = array[6].Value<int>() / 1000;
                     item.Address = ip;
-
-                    if (SelectedItem == null) SelectedItem = item;
                 }), DispatcherPriority.Background);
             }
 
@@ -229,26 +132,10 @@ namespace FreeLeaf.Model
             return x % Colors.Length;
         }
 
-        public void EditPinned(DeviceItem item, bool pinned)
-        {
-            item.IsPinned = pinned;
-            if (!item.IsAvailable && !pinned)
-            {
-                if (SelectedItem == item) SelectedItem = null;
-                items.Remove(item);
-            }
-
-            view.Refresh();
-
-            var devices = items.Where((i) => i.IsPinned);
-            var json = JsonConvert.SerializeObject(devices);
-            File.WriteAllText("D:/pinned.txt", json);
-        }
     }
 
     public class DeviceItem : ObservableObject
     {
-        [JsonIgnore()]
         public string Name
         {
             get
@@ -303,39 +190,7 @@ namespace FreeLeaf.Model
             }
         }
 
-        private bool isPinned;
-        [JsonIgnore()]
-        public bool IsPinned
-        {
-            get { return isPinned; }
-            set
-            {
-                isPinned = value;
-                RaisePropertyChanged("IsPinned");
-            }
-        }
-
-        private bool isAvailable;
-        [JsonIgnore()]
-        public bool IsAvailable
-        {
-            get { return isAvailable; }
-            set
-            {
-                if (isAvailable != value && !value)
-                {
-                    Battery = "-";
-                    Storage = "-";
-                    Wifi = "-";
-                }
-
-                isAvailable = value;
-                RaisePropertyChanged("IsAvailable");
-            }
-        }
-
         private string color;
-        [JsonIgnore()]
         public string Color
         {
             get { return color; }
@@ -347,7 +202,6 @@ namespace FreeLeaf.Model
         }
 
         private string battery = "-";
-        [JsonIgnore()]
         public string Battery
         {
             get { return battery; }
@@ -359,7 +213,6 @@ namespace FreeLeaf.Model
         }
 
         private string storage = "-";
-        [JsonIgnore()]
         public string Storage
         {
             get { return storage; }
@@ -370,20 +223,7 @@ namespace FreeLeaf.Model
             }
         }
 
-        private string wifi = "-";
-        [JsonIgnore()]
-        public string Wifi
-        {
-            get { return wifi; }
-            set
-            {
-                wifi = value;
-                RaisePropertyChanged("Wifi");
-            }
-        }
-
         private int lastUpdated = 0;
-        [JsonIgnore()]
         public int LastUpdated
         {
             get { return lastUpdated; }
@@ -393,7 +233,5 @@ namespace FreeLeaf.Model
                 RaisePropertyChanged("LastUpdated");
             }
         }
-
-        public int RefreshRate = 3000;
     }
 }
