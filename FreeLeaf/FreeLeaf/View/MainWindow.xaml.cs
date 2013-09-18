@@ -13,6 +13,27 @@ namespace FreeLeaf.View
         {
             InitializeComponent();
             model = (MainViewModel)this.DataContext;
+
+            DeviceList.Loaded += (sender, e) =>
+            {
+                var element = DeviceList.ItemContainerGenerator.ContainerFromIndex(DeviceList.Items.Count - 1) as ListViewItem;
+                var TextBoxConnect = element.Template.FindName("PART_Text", element) as TextBox;
+                TextBoxConnect.KeyUp += TextBoxConnect_KeyUp;
+            };
+        }
+
+        void TextBoxConnect_KeyUp(object sender, KeyEventArgs e)
+        {
+            var text = sender as TextBox;
+
+            if (e.Key == Key.Enter)
+            {
+                ShowTransferWindow(new DeviceItem() { Address = text.Text });
+            }
+            else if (e.Key == Key.Escape)
+            {
+                text.Clear();
+            }
         }
 
         private void ListView_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -20,37 +41,18 @@ namespace FreeLeaf.View
             var element = e.OriginalSource as FrameworkElement;
             var item = element.DataContext as DeviceItem;
 
-            if (item != null)
+            if (item != null && item.ID != null)
             {
-                if (item.ID == null)
-                {
-                    var li = sss.ContainerFromElement(element) as UIElement;
-
-                    d.Width = sss.ActualWidth;
-                    d.PlacementTarget = li;
-                    d.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
-                    d.IsOpen = true;
-                }
-                else
-                {
-                    if (item != null)
-                    {
-                        this.Hide();
-                        var transfer = new TransferWindow(item);
-                        transfer.Closing += (sender1, e1) => { this.Show(); };
-                        transfer.Show();
-                    }
-                }
+                ShowTransferWindow(item);
             }
         }
 
-        private void TextBox_PreviewTextInput_1(object sender, TextCompositionEventArgs e)
+        private void ShowTransferWindow(DeviceItem item)
         {
-            int result;
-            if (!(int.TryParse(e.Text, out result) || e.Text == "."))
-            {
-                e.Handled = true;
-            }
+            this.Hide();
+            var transfer = new TransferWindow(item);
+            transfer.Closing += (sender1, e1) => { this.Show(); };
+            transfer.Show();
         }
     }
 }

@@ -36,7 +36,8 @@ namespace FreeLeaf.Model
 
             items.Add(new DeviceItem()
             {
-                Username = "Connect via IP address"
+                Username = "Connect via IP address",
+                Color = "#e4715f"
             });
 
             if (IsInDesignMode) return;

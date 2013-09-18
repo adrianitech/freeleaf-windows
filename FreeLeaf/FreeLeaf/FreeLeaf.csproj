@@ -77,9 +77,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\Helper.cs" />
-    <Compile Include="View\ConnectWindow.xaml.cs">
-      <DependentUpon>ConnectWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="View\QueueWindow.xaml.cs">
       <DependentUpon>QueueWindow.xaml</DependentUpon>
     </Compile>
@@ -90,10 +87,6 @@
     <Compile Include="Model\MainViewModel.cs" />
     <Compile Include="Model\TransferViewModel.cs" />
     <Compile Include="Model\ViewModelLocator.cs" />
-    <Page Include="View\ConnectWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
