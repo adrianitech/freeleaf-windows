@@ -13,7 +13,64 @@
     </Window.Resources>
     
     <Grid>
-        <ListView ItemsSource="{Binding Items}" ItemContainerStyleSelector="{StaticResource DiscoveryListStyleSelector}"
+        <Popup x:Name="d" StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Path Data="M8,0L16,8L0,8Z" Fill="#e4715f" HorizontalAlignment="Center" />
+                <Grid Grid.Row="1" Background="#e4715f">
+                    <StackPanel Margin="15">
+                        <TextBlock Margin="0,0,0,5" Text="Enter your device IP address" Foreground="White" FontSize="12" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox PreviewTextInput="TextBox_PreviewTextInput_1">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Foreground" Value="#333333" />
+                                        <Setter Property="FontSize" Value="12" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="TextBox">
+                                                    <Border Padding="6,5" Background="#E5FFFFFF">
+                                                        <ScrollViewer x:Name="PART_ContentHost" />
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                            <Button Grid.Column="1" Content="Connect">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Foreground" Value="#333333" />
+                                        <Setter Property="FontSize" Value="12" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Grid>
+                                                        <Border Padding="6,5" Background="#E5FFFFFF">
+                                                            <ContentPresenter />
+                                                        </Border>
+                                                        <Border BorderThickness="1,0,0,0" BorderBrush="#19000000" />
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Popup>
+        <ListView x:Name="sss" ItemsSource="{Binding Items}" ItemContainerStyleSelector="{StaticResource DiscoveryListStyleSelector}"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False"
                   MouseLeftButtonUp="ListView_MouseLeftButtonUp">
             <ListView.Style>

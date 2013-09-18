@@ -1,5 +1,9 @@
 ﻿using FreeLeaf.Model;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Input;
 
 namespace FreeLeaf.View
@@ -15,28 +19,42 @@ namespace FreeLeaf.View
             model.SetDevice(item);
         }
 
-        private void ButtonFolderUp_Click(object sender, RoutedEventArgs e)
+        private void ButtonLocalFolderUp_Click(object sender, RoutedEventArgs e)
         {
             model.NavigateLocalUp();
         }
 
-        private void ButtonFolderUp_Click1(object sender, RoutedEventArgs e)
+        private void ButtonLocalNewFolder_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void ButtonLocalRename_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var item in ListLocal.SelectedItems)
+            {
+                
+            }
+        }
+
+        private void ButtonLocalDelete_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("Doy y dsfjdsklf",
+                " das das dhasjk hd jkahjk dsa", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                FileItem[] items = new FileItem[ListLocal.SelectedItems.Count];
+                ListLocal.SelectedItems.CopyTo(items, 0);
+
+                foreach(var item in items)
+                {
+                    model.LocalDrive.Remove(item);
+                }
+            }
+        }
+
+        private void ButtonRemoteFolderUp_Click(object sender, RoutedEventArgs e)
         {
             model.NavigateRemoteUp();
-        }
-
-        private void ButtonSetDestination_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            var dragData = new DataObject("LinkItems", ListLocal.SelectedItems);
-            DragDrop.DoDragDrop(ListLocal, dragData, DragDropEffects.Link);
-        }
-
-        private void ButtonClearDestination_Click(object sender, RoutedEventArgs e)
-        {
-            foreach (FileItem item in ListLocal.SelectedItems)
-            {
-                item.Destination = null;
-            }
         }
 
         private void LocalList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -51,7 +69,7 @@ namespace FreeLeaf.View
             }
         }
 
-        private void LocalList_MouseDoubleClick1(object sender, MouseButtonEventArgs e)
+        private void RemoteList_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var item = (e.OriginalSource as FrameworkElement).DataContext as FileItem;
             if (item != null)
@@ -67,11 +85,6 @@ namespace FreeLeaf.View
         {
             var queue = new QueueWindow() { Owner = this };
             queue.ShowDialog();
-            /*foreach (var item in model.Queue)
-            {
-                if (!item.IsRemote) model.SendFile(item);
-                else model.ReceiveFile(item);
-            }*/
         }
     }
 }

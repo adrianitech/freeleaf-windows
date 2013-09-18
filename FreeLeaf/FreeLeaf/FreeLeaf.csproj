@@ -54,6 +54,7 @@
     <Reference Include="PresentationFramework.Aero" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Interactivity">
       <HintPath>..\packages\MvvmLightLibs.4.1.27.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
@@ -75,6 +76,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\Helper.cs" />
     <Compile Include="View\ConnectWindow.xaml.cs">
       <DependentUpon>ConnectWindow.xaml</DependentUpon>
     </Compile>

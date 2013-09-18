@@ -22,7 +22,7 @@ namespace FreeLeaf.View
             }
             else
             {
-                ButtonStartStop.Content = "STOP";
+                //ButtonStartStop.Content = "STOP";
                 model.IsBusy = true;
                 model.forceStop = false;
 
@@ -38,7 +38,7 @@ namespace FreeLeaf.View
                     i--;
                 }
 
-                ButtonStartStop.Content = "START";
+                //ButtonStartStop.Content = "START";
                 model.IsBusy = false;
             }
         }

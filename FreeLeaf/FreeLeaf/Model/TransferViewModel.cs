@@ -1,4 +1,6 @@
-﻿using GalaSoft.MvvmLight;
+﻿using FreeLeaf.View;
+using GalaSoft.MvvmLight;
+using GalaSoft.MvvmLight.Command;
 using GongSolutions.Wpf.DragDrop;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,6 +16,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace FreeLeaf.Model
@@ -169,55 +173,11 @@ namespace FreeLeaf.Model
                         drive.DriveType.ToString() :
                         drive.VolumeLabel,
                         drive.Name.Substring(0, drive.Name.Length - 1)),
-                    Size = SizeToString(drive.TotalSize),
+                    Size = Helper.SizeToString(drive.TotalSize),
                     Extension = drive.DriveFormat,
                     IsFolder = true
                 });
             }
-        }
-
-
-        private String getTimeToETA(long timeLeft)
-        {
-            String msgLeft;
-
-            if (timeLeft < 60)
-            {
-                if (timeLeft == 1)
-                {
-                    msgLeft = " second left";
-                }
-                else
-                {
-                    msgLeft = " seconds left";
-                }
-            }
-            else if (timeLeft < 3600)
-            {
-                timeLeft /= 60;
-                if (timeLeft == 1)
-                {
-                    msgLeft = " minute left";
-                }
-                else
-                {
-                    msgLeft = " minutes left";
-                }
-            }
-            else
-            {
-                timeLeft /= 3600;
-                if (timeLeft == 1)
-                {
-                    msgLeft = " hour left";
-                }
-                else
-                {
-                    msgLeft = " hours left";
-                }
-            }
-
-            return timeLeft + msgLeft;
         }
 
         public Task SendFile(FileItem item)
@@ -254,9 +214,9 @@ namespace FreeLeaf.Model
                     long diff = stopwatch.ElapsedMilliseconds;
                     if (diff >= 1000)
                     {
-                        item.ProgressSize = SizeToString(bytesTotal);
+                        item.ProgressSize = Helper.SizeToString(bytesTotal);
                         item.Progress = 100 * bytesTotal / (double)size;
-                        item.Speed = SizeToString(lastRead) + "/s";
+                        item.Speed = Helper.SizeToString(lastRead) + "/s";
 
                         double t1 = (size - bytesTotal) / (double)lastRead;
                         double t2 = diff / (double)1000;
@@ -266,7 +226,7 @@ namespace FreeLeaf.Model
                         if (timeLeft > lastLeft) timeLeft = lastLeft + 1;
                         lastLeft = timeLeft;
 
-                        item.TimeLeft = getTimeToETA(timeLeft);
+                        item.TimeLeft = Helper.getTimeToETA(timeLeft);
 
                         lastRead = 0;
                         stopwatch.Restart();
@@ -312,9 +272,9 @@ namespace FreeLeaf.Model
                     long diff = stopwatch.ElapsedMilliseconds;
                     if (diff >= 1000)
                     {
-                        item.ProgressSize = SizeToString(bytesTotal);
+                        item.ProgressSize = Helper.SizeToString(bytesTotal);
                         item.Progress = 100 * bytesTotal / (double)size;
-                        item.Speed = SizeToString(lastRead) + "/s";
+                        item.Speed = Helper.SizeToString(lastRead) + "/s";
 
                         double t1 = (size - bytesTotal) / (double)lastRead;
                         double t2 = diff / (double)1000;
@@ -324,7 +284,7 @@ namespace FreeLeaf.Model
                         if (timeLeft > lastLeft) timeLeft = lastLeft + 1;
                         lastLeft = timeLeft;
 
-                        item.TimeLeft = getTimeToETA(timeLeft);
+                        item.TimeLeft = Helper.getTimeToETA(timeLeft);
 
                         lastRead = 0;
                         stopwatch.Restart();
@@ -377,7 +337,7 @@ namespace FreeLeaf.Model
                             Model = this,
                             Path = file.FullName,
                             Name = file.Name,
-                            Size = SizeToString(file.Length),
+                            Size = Helper.SizeToString(file.Length),
                             Extension = file.Extension.Length >= 1 ? file.Extension.Substring(1).ToUpper() : "",
                             Date = file.LastWriteTime.ToString(),
                             IsFolder = false
@@ -421,7 +381,7 @@ namespace FreeLeaf.Model
                 var size = "";
                 if (!folder)
                 {
-                    size = SizeToString(obj.Value<long>("size"));
+                    size = Helper.SizeToString(obj.Value<long>("size"));
                 }
 
                 var ext = Path.GetExtension(name).ToUpper();
@@ -444,20 +404,7 @@ namespace FreeLeaf.Model
             }
         }
 
-        public string SizeToString(long size)
-        {
-            string[] sizes = { "B", "KB", "MB", "GB" };
-            double len = size;
-            int order = 0;
-
-            while (len >= 1024 && order + 1 < sizes.Length)
-            {
-                order++;
-                len = len / (double)1024;
-            }
-
-            return string.Format("{0:0.##} {1}", len, sizes[order]);
-        }
+        
 
         public void SetDevice(DeviceItem item)
         {
@@ -474,7 +421,8 @@ namespace FreeLeaf.Model
         {
             if (dropInfo.DragInfo.VisualSource != dropInfo.VisualTarget)
             {
-                dropInfo.DropTargetAdorner = DropTargetAdorners.Highlight;
+                if (dropInfo.TargetItem is FileItem && (dropInfo.TargetItem as FileItem).IsFolder)
+                    dropInfo.DropTargetAdorner = typeof(sss);
                 dropInfo.Effects = DragDropEffects.Copy;
             }
         }
@@ -500,7 +448,11 @@ namespace FreeLeaf.Model
                 foreach (var item in dragItems)
                 {
                     if (item.IsFolder) continue;
-                    item.Destination = path;
+                    if (!Queue.Contains(item))
+                    {
+                        item.Destination = path;
+                        Queue.Add(item);
+                    }
                 }
             }
             else if (dropInfo.Data is FileItem)
@@ -508,11 +460,37 @@ namespace FreeLeaf.Model
                 var dragItem = dropInfo.Data as FileItem;
                 if (!dragItem.IsFolder)
                 {
-                    dragItem.Destination = path;
+                    if (!Queue.Contains(dragItem))
+                    {
+                        dragItem.Destination = path;
+                        Queue.Add(dragItem);
+                    }
                 }
             }
         }
     }
+
+    public class sss : DropTargetAdorner
+    {
+        public sss(UIElement adornedElement)
+            : base(adornedElement)
+        {
+            SetValue(RenderOptions.EdgeModeProperty, EdgeMode.Aliased);
+        }
+
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            if (DropInfo.VisualTargetItem != null)
+            {
+                Rect rect = new Rect(
+                    DropInfo.VisualTargetItem.TranslatePoint(new Point(), AdornedElement),
+                    VisualTreeHelper.GetDescendantBounds(DropInfo.VisualTargetItem).Size);
+                rect.Inflate(-1, -1);
+                drawingContext.DrawRectangle(null, new Pen(Brushes.Red, 1), rect);
+            }
+        }
+    }
+
 
     public class FileItem : ObservableObject
     {
@@ -579,12 +557,8 @@ namespace FreeLeaf.Model
             get { return destination; }
             set
             {
-                if (!this.IsFolder)
-                {
-                    destination = value;
-                    IsInQueue = !string.IsNullOrEmpty(destination);
-                    RaisePropertyChanged("Destination");
-                }
+                destination = value;
+                RaisePropertyChanged("Destination");
             }
         }
 
@@ -654,22 +628,15 @@ namespace FreeLeaf.Model
             }
         }
 
-        public bool IsInQueue
+
+        public ICommand RemoveFromQueue
         {
-            get { return Model.Queue.Contains(this); }
-            set
+            get
             {
-                if (value)
-                {
-                    if (!Model.Queue.Contains(this))
-                    {
-                        Model.Queue.Add(this);
-                    }
-                }
-                else
+                return new RelayCommand(new Action(() =>
                 {
                     Model.Queue.Remove(this);
-                }
+                }));
             }
         }
     }

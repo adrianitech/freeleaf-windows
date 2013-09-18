@@ -6,26 +6,56 @@
         Title="FreeLeaf" Height="650" Width="1200" MinHeight="580" MinWidth="960" Background="White"
         WindowStartupLocation="CenterScreen" FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True">
     
+    <Window.Resources>
+        <DataTemplate x:Key="GridViewCellTemplate">
+            <TextBlock Text="{Binding}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+        </DataTemplate>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="42" />
             <RowDefinition />
             <RowDefinition Height="26" />
         </Grid.RowDefinitions>
         <Border Background="#FFEDEDED">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="ButtonFolderUp_Click">
-                        <Path Data="F1 M 34,57L 42,57L 42,32.25L 52,42.25L 52,31.75L 38,17.75L 24,31.75L 24,42.25L 34,32.25L 34,57 Z"
-        					  Stretch="Uniform" Fill="#333333" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <Button Width="48" ToolTip="Go up" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonLocalFolderUp_Click">
+                        <Path Data="M166.801,131.66l20.984,20.893c16.654,16.581,38.769,25.712,62.27,25.712H422V380.34H90V131.66H166.801M183.317,91.66H50v328.68h412V138.265H250.055c-12.762,0-25.004-5.055-34.048-14.059L183.317,91.66z"
+        					  Stretch="Uniform" Fill="#333333" Height="16" />
                     </Button>
-                    <Rectangle Margin="0,5" Width="1" Fill="#FFCBCBCB" />
+                    <Rectangle Margin="5,10" Width="1" Fill="#FFCBCBCB" />
+                    <Button Width="48" ToolTip="New folder" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonLocalNewFolder_Click">
+                        <Path Data="M462,328.654h-51.733v-51.732h-39.951v51.732h-51.732v39.951h51.732v51.732h39.951v-51.732H462V328.654z M280.587,420.338H50V91.662h133.317l32.689,32.545c9.044,9.004,21.286,14.059,34.048,14.059H462v100.297h-40v-60.297H250.055c-23.501,0-45.615-9.131-62.27-25.713l-20.984-20.891H90v248.676h190.587V420.338z"
+        					  Stretch="Uniform" Fill="#333333" Height="16" />
+                    </Button>
+                    <Button Width="48" ToolTip="Rename" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonLocalRename_Click">
+                        <Path Data="M283.977,101.757V241h40.198v30h-40.198v139.243c0,9.271,7.516,16.786,16.786,16.786h38.412V462h-48.316c-13.533,0-26.34-6.127-34.832-16.665l-0.068-0.085c-8.49,10.589-21.328,16.75-34.9,16.75h-48.232v-34.971h38.412c9.271,0,16.786-7.516,16.786-16.786V271h-40.198v-30h40.198V101.757c0-9.271-7.516-16.786-16.786-16.786h-38.412V50h48.316c13.533,0,26.34,6.127,34.832,16.665l0.068,0.085c8.49-10.589,21.328-16.75,34.9-16.75h48.232v34.971h-38.412C291.492,84.971,283.977,92.486,283.977,101.757z M85,205.417H50v101h35V205.417z M85,85h42.825v-0.029V50H50v121.417h35V85zM127.825,427.029V427H85v-86.583H50V462h77.825V427.029z M384.175,50v34.971V85H427v86.417h35V50H384.175z M427,427h-42.825v0.029V462H462V340.417h-35V427z M427,306.417h35v-101h-35V306.417z"
+        					  Stretch="Uniform" Fill="#333333" Height="16" />
+                    </Button>
+                    <Button Width="48" ToolTip="Delete" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonLocalDelete_Click">
+                        <Path Data="M462,256c0,113.771-92.229,206-206,206S50,369.771,50,256S142.229,50,256,50S462,142.229,462,256zM422,256c0-91.755-74.258-166-166-166c-91.755,0-166,74.259-166,166c0,91.755,74.258,166,166,166C347.755,422,422,347.741,422,256zM325.329,362.49l-67.327-67.324l-67.329,67.332l-36.164-36.186l67.314-67.322l-67.321-67.317l36.185-36.164l67.31,67.301l67.3-67.309l36.193,36.17l-67.312,67.315l67.32,67.31L325.329,362.49z"
+        					  Stretch="Uniform" Fill="#333333" Height="18" />
+                    </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Rectangle Margin="0,5" Width="1" Fill="#FFCBCBCB" />
-                    <Button Style="{StaticResource ToolbarButtonStyle}" Click="ButtonFolderUp_Click1">
-                        <Path Data="F1 M 34,57L 42,57L 42,32.25L 52,42.25L 52,31.75L 38,17.75L 24,31.75L 24,42.25L 34,32.25L 34,57 Z"
-        					  Stretch="Uniform" Fill="#333333" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    <Button Width="48" ToolTip="Delete" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonLocalRename_Click">
+                        <Path Data="M462,256c0,113.771-92.229,206-206,206S50,369.771,50,256S142.229,50,256,50S462,142.229,462,256zM422,256c0-91.755-74.258-166-166-166c-91.755,0-166,74.259-166,166c0,91.755,74.258,166,166,166C347.755,422,422,347.741,422,256zM325.329,362.49l-67.327-67.324l-67.329,67.332l-36.164-36.186l67.314-67.322l-67.321-67.317l36.185-36.164l67.31,67.301l67.3-67.309l36.193,36.17l-67.312,67.315l67.32,67.31L325.329,362.49z"
+        					  Stretch="Uniform" Fill="#333333" Height="18" />
+                    </Button>
+                    <Button Width="48" ToolTip="Rename" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonLocalRename_Click">
+                        <Path Data="M283.977,101.757V241h40.198v30h-40.198v139.243c0,9.271,7.516,16.786,16.786,16.786h38.412V462h-48.316c-13.533,0-26.34-6.127-34.832-16.665l-0.068-0.085c-8.49,10.589-21.328,16.75-34.9,16.75h-48.232v-34.971h38.412c9.271,0,16.786-7.516,16.786-16.786V271h-40.198v-30h40.198V101.757c0-9.271-7.516-16.786-16.786-16.786h-38.412V50h48.316c13.533,0,26.34,6.127,34.832,16.665l0.068,0.085c8.49-10.589,21.328-16.75,34.9-16.75h48.232v34.971h-38.412C291.492,84.971,283.977,92.486,283.977,101.757z M85,205.417H50v101h35V205.417z M85,85h42.825v-0.029V50H50v121.417h35V85zM127.825,427.029V427H85v-86.583H50V462h77.825V427.029z M384.175,50v34.971V85H427v86.417h35V50H384.175z M427,427h-42.825v0.029V462H462V340.417h-35V427z M427,306.417h35v-101h-35V306.417z"
+        					  Stretch="Uniform" Fill="#333333" Height="16" />
+                    </Button>
+                    <Button Width="48" ToolTip="New folder" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonLocalRename_Click">
+                        <Path Data="M462,328.654h-51.733v-51.732h-39.951v51.732h-51.732v39.951h51.732v51.732h39.951v-51.732H462V328.654z M280.587,420.338H50V91.662h133.317l32.689,32.545c9.044,9.004,21.286,14.059,34.048,14.059H462v100.297h-40v-60.297H250.055c-23.501,0-45.615-9.131-62.27-25.713l-20.984-20.891H90v248.676h190.587V420.338z"
+        					  Stretch="Uniform" Fill="#333333" Height="16" />
+                    </Button>
+                    <Rectangle Margin="5,10" Width="1" Fill="#FFCBCBCB" />
+                    <Button Width="48" ToolTip="Go up" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonRemoteFolderUp_Click">
+                        <Path Data="M166.801,131.66l20.984,20.893c16.654,16.581,38.769,25.712,62.27,25.712H422V380.34H90V131.66H166.801M183.317,91.66H50v328.68h412V138.265H250.055c-12.762,0-25.004-5.055-34.048-14.059L183.317,91.66z"
+        					  Stretch="Uniform" Fill="#333333" Height="16" />
                     </Button>
                 </StackPanel>
             </Grid>
@@ -41,71 +71,23 @@
                           IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn Header="Name" Width="240">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn Header="Date modified" Width="140">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Date}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn Header="Size" Width="90">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Size}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn Header="Extension" Width="90">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Destination}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                            <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="140" Header="Date modified" DisplayMemberBinding="{Binding Date}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="90" Header="Size" DisplayMemberBinding="{Binding Size}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="90" Header="Extension" DisplayMemberBinding="{Binding Extension}" CellTemplate="{StaticResource GridViewCellTemplate}" />
                         </GridView>
                     </ListView.View>
                 </ListView>
             </Border>
             <Border Grid.Column="2" BorderThickness="1,1,0,0" BorderBrush="#d6d6d6">
-                <ListView x:Name="ListLocal1" ItemsSource="{Binding RemoteFiles}" MouseDoubleClick="LocalList_MouseDoubleClick1" Style="{StaticResource LocalListViewStyle}" Tag="{Binding RemotePath}"
+                <ListView x:Name="ListLocal1" ItemsSource="{Binding RemoteFiles}" MouseDoubleClick="RemoteList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}" Tag="{Binding RemotePath}"
                           IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn Header="Name" Width="240">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Name}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn Header="Date modified" Width="140">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Date}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn Header="Size" Width="90">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Size}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                            <GridViewColumn Header="Extension" Width="90">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Destination}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                            <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="140" Header="Date modified" DisplayMemberBinding="{Binding Date}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="90" Header="Size" DisplayMemberBinding="{Binding Size}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="90" Header="Extension" DisplayMemberBinding="{Binding Extension}" CellTemplate="{StaticResource GridViewCellTemplate}" />
                         </GridView>
                     </ListView.View>
                 </ListView>

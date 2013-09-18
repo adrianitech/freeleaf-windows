@@ -12,11 +12,31 @@
     
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="42" />
             <RowDefinition />
-            <RowDefinition Height="40" />
             <RowDefinition Height="26" />
         </Grid.RowDefinitions>
-        <ListView x:Name="ListQueue" ItemsSource="{Binding Queue}" IsEnabled="{Binding Path=IsBusy, Converter={StaticResource NegateBooleanConverter}}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <Border Background="#FFEDEDED" BorderThickness="0,0,0,1" BorderBrush="#d6d6d6">
+            <Grid>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button Width="48" ToolTip="Clear queue" Style="{StaticResource ToolbarButtonStyle}">
+                        <Path Data="M462,256c0,113.771-92.229,206-206,206S50,369.771,50,256S142.229,50,256,50S462,142.229,462,256zM422,256c0-91.755-74.258-166-166-166c-91.755,0-166,74.259-166,166c0,91.755,74.258,166,166,166C347.755,422,422,347.741,422,256zM325.329,362.49l-67.327-67.324l-67.329,67.332l-36.164-36.186l67.314-67.322l-67.321-67.317l36.185-36.164l67.31,67.301l67.3-67.309l36.193,36.17l-67.312,67.315l67.32,67.31L325.329,362.49z"
+        					  Stretch="Uniform" Fill="#333333" Height="18" />
+                    </Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Width="48" ToolTip="Start" Style="{StaticResource ToolbarButtonStyle}">
+                        <Path Data="M335.084,339.042H178.916V172.958h156.168V339.042z M256,92.481c44.433,0,86.18,17.068,117.553,48.064C404.794,171.411,422,212.413,422,255.999s-17.206,84.588-48.448,115.455c-31.372,30.994-73.12,48.064-117.552,48.064s-86.179-17.07-117.552-48.064C107.206,340.587,90,299.585,90,255.999s17.206-84.588,48.448-115.453C169.821,109.55,211.568,92.481,256,92.481 M256,52.481c-113.771,0-206,91.117-206,203.518c0,112.398,92.229,203.52,206,203.52c113.772,0,206-91.121,206-203.52C462,143.599,369.772,52.481,256,52.481L256,52.481z"
+        					  Stretch="Uniform" Fill="#333333" Height="18" />
+                    </Button>
+                    <Button Width="48" ToolTip="Start" Style="{StaticResource ToolbarButtonStyle}">
+                        <Path Data="M310.838,348h-70V164h70V348z M454.309,152.96C417.496,89.198,349.463,49.92,275.838,49.92c-55.373,0-107.58,22.217-145.725,60.356l28.312,28.312c30.732-30.729,72.797-48.63,117.412-48.63c59.32,0,114.135,31.647,143.797,83.021c29.66,51.373,29.66,114.667,0,166.042c-29.662,51.373-84.477,83.02-143.797,83.02c-59.322,0-114.137-31.646-143.797-83.02c-14.707-25.475-22.113-53.881-22.234-82.311h40.682l-60.082-83.71l-60.324,83.71H69.77c0.121,35.342,9.314,70.66,27.598,102.33C134.18,422.803,202.213,462.08,275.838,462.08s141.658-39.277,178.471-103.039S491.121,216.722,454.309,152.96z"
+        					  Stretch="Uniform" Fill="#333333" Height="18" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+        <ListView x:Name="ListQueue" Grid.Row="1" ItemsSource="{Binding Queue}" IsEnabled="{Binding Path=IsBusy, Converter={StaticResource NegateBooleanConverter}}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListView.Style>
                 <Style TargetType="ListView">
                     <Setter Property="Template">
@@ -69,7 +89,7 @@
                                                 </TextBlock>
                                             </StackPanel>
                                         </StackPanel>
-                                        <Button Name="Button" Margin="0,0,10,0" Grid.Column="1" Content="Delete" Visibility="Collapsed" VerticalAlignment="Center" Click="Button_Click_2" />
+                                        <Button Name="Button" Margin="0,0,10,0" Grid.Column="1" Content="Delete" Command="{Binding RemoveFromQueue}" Visibility="Collapsed" VerticalAlignment="Center" />
                                     </Grid>
                                 </Border>
                                 <ControlTemplate.Triggers>
@@ -86,37 +106,10 @@
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
-        <Grid Grid.Row="1">
-            <Button x:Name="ButtonStartStop" Content="START" Click="ButtonStartStop_Click">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Foreground" Value="#333333" />
-                        <Setter Property="FontSize" Value="12" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Name="Border" Padding="15,6" Background="#FFE4E4E4">
-                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Border" Property="Background" Value="#FFC7C7C7" />
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </Button.Style>
-            </Button>
-        </Grid>
         <Border Grid.Row="2" Background="#e4715f">
             <Grid Margin="10,0">
                 <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left">
                     <Run Text="{Binding Path=Queue.Count, Mode=OneWay}" /> item(s) remaining
-                </TextBlock>
-                <TextBlock FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right">
-                    <Hyperlink>Clear queue</Hyperlink>
                 </TextBlock>
             </Grid>
         </Border>

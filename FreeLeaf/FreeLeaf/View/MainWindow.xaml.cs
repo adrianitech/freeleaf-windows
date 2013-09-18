@@ -1,5 +1,6 @@
 ﻿using FreeLeaf.Model;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace FreeLeaf.View
@@ -23,18 +24,32 @@ namespace FreeLeaf.View
             {
                 if (item.ID == null)
                 {
-                    var connect = new ConnectWindow() { Owner = this };
-                    if (connect.ShowDialog() == true) item = connect.Item;
-                    else item = null;
-                }
+                    var li = sss.ContainerFromElement(element) as UIElement;
 
-                if (item != null)
-                {
-                    this.Hide();
-                    var transfer = new TransferWindow(item);
-                    transfer.Closing += (sender1, e1) => { this.Show(); };
-                    transfer.Show();
+                    d.Width = sss.ActualWidth;
+                    d.PlacementTarget = li;
+                    d.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+                    d.IsOpen = true;
                 }
+                else
+                {
+                    if (item != null)
+                    {
+                        this.Hide();
+                        var transfer = new TransferWindow(item);
+                        transfer.Closing += (sender1, e1) => { this.Show(); };
+                        transfer.Show();
+                    }
+                }
+            }
+        }
+
+        private void TextBox_PreviewTextInput_1(object sender, TextCompositionEventArgs e)
+        {
+            int result;
+            if (!(int.TryParse(e.Text, out result) || e.Text == "."))
+            {
+                e.Handled = true;
             }
         }
     }
