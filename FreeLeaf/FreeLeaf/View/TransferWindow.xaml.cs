@@ -3,10 +3,12 @@ using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 
 namespace FreeLeaf.View
 {
@@ -19,6 +21,15 @@ namespace FreeLeaf.View
             InitializeComponent();
             model = (TransferViewModel)this.DataContext;
             model.SetDevice(item);
+
+            model.Queue.CollectionChanged += (sender, e) =>
+            {
+                if (e.Action == NotifyCollectionChangedAction.Add)
+                {
+                    var sb = this.FindResource("PulseAnimationStory") as Storyboard;
+                    sb.Begin();
+                }
+            };
         }
 
         private void ButtonLocalFolderUp_Click(object sender, RoutedEventArgs e)

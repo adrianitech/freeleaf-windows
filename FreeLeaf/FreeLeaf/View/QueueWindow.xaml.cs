@@ -50,6 +50,9 @@ namespace FreeLeaf.View
             }
 
             model.IsBusy = false;
+
+            model.NavigateLocal(model.LocalPath);
+            model.NavigateRemote(model.RemotePath);
         }
     }
 }

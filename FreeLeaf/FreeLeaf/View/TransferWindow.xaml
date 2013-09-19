@@ -10,6 +10,11 @@
         <DataTemplate x:Key="GridViewCellTemplate">
             <TextBlock Text="{Binding}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
         </DataTemplate>
+        <Storyboard x:Key="PulseAnimationStory">
+            <DoubleAnimation From="1" To="0" Duration="0:0:0.500" Storyboard.TargetName="PulseCount" Storyboard.TargetProperty="Opacity" />
+            <DoubleAnimation From="1" To="4" Duration="0:0:0.500" Storyboard.TargetName="PulseCount" Storyboard.TargetProperty="RenderTransform.ScaleX" />
+            <DoubleAnimation From="1" To="4" Duration="0:0:0.500" Storyboard.TargetName="PulseCount" Storyboard.TargetProperty="RenderTransform.ScaleY" />
+        </Storyboard>
     </Window.Resources>
     
     <Grid>
@@ -18,6 +23,50 @@
             <RowDefinition />
             <RowDefinition Height="26" />
         </Grid.RowDefinitions>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border BorderThickness="0,1,1,0" BorderBrush="#d6d6d6">
+                <ListView x:Name="ListLocal" ItemsSource="{Binding LocalDrive}" MouseDoubleClick="LocalList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}" Tag="{Binding LocalPath}"
+                          IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                            <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="140" Header="Date modified" DisplayMemberBinding="{Binding Date}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="90" Header="Size" DisplayMemberBinding="{Binding Size}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="90" Header="Extension" DisplayMemberBinding="{Binding Extension}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+            <GridSplitter Grid.Column="1" Background="#ededed" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+            <Border Grid.Column="2" BorderThickness="1,1,0,0" BorderBrush="#d6d6d6">
+                <ListView x:Name="ListRemote" ItemsSource="{Binding RemoteFiles}" MouseDoubleClick="RemoteList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}" Tag="{Binding RemotePath}"
+                          IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
+                            <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="140" Header="Date modified" DisplayMemberBinding="{Binding Date}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="90" Header="Size" DisplayMemberBinding="{Binding Size}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="90" Header="Extension" DisplayMemberBinding="{Binding Extension}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+        </Grid>
+        <Border Grid.Row="2" Background="#e4715f">
+            <Grid Margin="10,0">
+                <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left">
+                    <Run Text="{Binding ElementName=ListLocal, Path=SelectedItems.Count, Mode=OneWay}" />/<Run Text="{Binding Items.Count, ElementName=ListLocal, Mode=OneWay}" /> item(s) selected
+                </TextBlock>
+                <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right">
+                    <Run Text="{Binding ElementName=ListRemote, Path=SelectedItems.Count, Mode=OneWay}" />/<Run Text="{Binding Items.Count, ElementName=ListRemote, Mode=OneWay}" /> item(s) selected
+                </TextBlock>
+            </Grid>
+        </Border>
         <Border Background="#FFEDEDED">
             <Grid>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
@@ -52,8 +101,18 @@
                             <Grid.RenderTransform>
                                 <TranslateTransform X="10" Y="5" />
                             </Grid.RenderTransform>
-                            <Rectangle Fill="#e4715f" RadiusX="5" RadiusY="5" />
-                            <TextBlock Text="{Binding Queue.Count}" Margin="4,2" Foreground="White" FontSize="9" />
+                            <Grid x:Name="PulseCountReal">
+                                <Rectangle Fill="#e4715f" RadiusX="5" RadiusY="5" />
+                                <TextBlock Text="{Binding Queue.Count}" Margin="4,2" Foreground="White" FontSize="9" />
+                            </Grid>
+                            <Rectangle x:Name="PulseCount" Opacity="0" RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
+                                <Rectangle.Fill>
+                                    <VisualBrush Visual="{Binding ElementName=PulseCountReal}" />
+                                </Rectangle.Fill>
+                                <Rectangle.RenderTransform>
+                                    <ScaleTransform />
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
                         </Grid>
                     </Grid>
                 </Button>
@@ -81,50 +140,6 @@
         					  Stretch="Uniform" Fill="#333333" Height="16" />
                     </Button>
                 </StackPanel>
-            </Grid>
-        </Border>
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Border BorderThickness="0,1,1,0" BorderBrush="#d6d6d6">
-                <ListView x:Name="ListLocal" ItemsSource="{Binding LocalDrive}" MouseDoubleClick="LocalList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}" Tag="{Binding LocalPath}"
-                          IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
-                    <ListView.View>
-                        <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="140" Header="Date modified" DisplayMemberBinding="{Binding Date}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="90" Header="Size" DisplayMemberBinding="{Binding Size}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="90" Header="Extension" DisplayMemberBinding="{Binding Extension}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </Border>
-            <Border Grid.Column="2" BorderThickness="1,1,0,0" BorderBrush="#d6d6d6">
-                <ListView x:Name="ListRemote" ItemsSource="{Binding RemoteFiles}" MouseDoubleClick="RemoteList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}" Tag="{Binding RemotePath}"
-                          IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
-                    <ListView.View>
-                        <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="140" Header="Date modified" DisplayMemberBinding="{Binding Date}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="90" Header="Size" DisplayMemberBinding="{Binding Size}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="90" Header="Extension" DisplayMemberBinding="{Binding Extension}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </Border>
-            <GridSplitter Grid.Column="1" Background="#ededed" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
-        </Grid>
-        <Border Grid.Row="2" Background="#e4715f">
-            <Grid Margin="10,0">
-                <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left">
-                    <Run Text="{Binding ElementName=ListLocal, Path=SelectedItems.Count, Mode=OneWay}" />/<Run Text="{Binding Items.Count, ElementName=ListLocal, Mode=OneWay}" /> item(s) selected
-                </TextBlock>
-                <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right">
-                    <Run Text="{Binding ElementName=ListRemote, Path=SelectedItems.Count, Mode=OneWay}" />/<Run Text="{Binding Items.Count, ElementName=ListRemote, Mode=OneWay}" /> item(s) selected
-                </TextBlock>
             </Grid>
         </Border>
     </Grid>

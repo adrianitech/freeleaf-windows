@@ -80,7 +80,7 @@ namespace FreeLeaf.Model
             set
             {
                 remoteFiles = value;
-                RaisePropertyChanged("RemoteL");
+                RaisePropertyChanged("RemoteFiles");
             }
         }
 
@@ -345,7 +345,7 @@ namespace FreeLeaf.Model
             }
         }
 
-        public async void NavigateLocal(string path)
+        public void NavigateLocal(string path)
         {
             if (path == "/")
             {
@@ -353,55 +353,46 @@ namespace FreeLeaf.Model
                 return;
             }
 
-            Status = "Populating folder";
             LocalPath = path;
             LocalDrive.Clear();
 
-            await Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            var di = new DirectoryInfo(path);
+            if (!di.Exists) return;
+
+            var dirs = di.EnumerateDirectories();
+            foreach (var dir in dirs)
             {
-                var di = new DirectoryInfo(path);
-                if (!di.Exists) return;
+                if (dir.Attributes.HasFlag(FileAttributes.Hidden |
+                    FileAttributes.System)) continue;
 
-                var dirs = di.EnumerateDirectories();
-                foreach (var dir in dirs)
+                LocalDrive.Add(new FileItem()
                 {
-                    if (dir.Attributes.HasFlag(FileAttributes.Hidden |
-                        FileAttributes.System)) continue;
+                    Model = this,
+                    Path = dir.FullName,
+                    Name = dir.Name,
+                    Extension = "FOLDER",
+                    Date = dir.LastWriteTime.ToString(),
+                    IsFolder = true
+                });
+            }
 
-                    LocalDrive.Add(new FileItem()
-                    {
-                        Model = this,
-                        Path = dir.FullName,
-                        Name = dir.Name,
-                        Extension = "FOLDER",
-                        Date = dir.LastWriteTime.ToString(),
-                        IsFolder = true
-                    });
-                }
+            var files = di.EnumerateFiles();
+            foreach (var file in files)
+            {
+                if (file.Attributes.HasFlag(FileAttributes.Hidden |
+                       FileAttributes.System)) continue;
 
-                var files = di.EnumerateFiles();
-                foreach (var file in files)
+                LocalDrive.Add(new FileItem()
                 {
-                    if (file.Attributes.HasFlag(FileAttributes.Hidden |
-                           FileAttributes.System)) continue;
-
-                    var item = Queue.FirstOrDefault((t) => t.Path.Equals(file.FullName));
-                    LocalDrive.Add(item != null ?
-                        item :
-                        new FileItem()
-                        {
-                            Model = this,
-                            Path = file.FullName,
-                            Name = file.Name,
-                            Size = Helper.SizeToString(file.Length),
-                            Extension = file.Extension.Length >= 1 ? file.Extension.Substring(1).ToUpper() : "",
-                            Date = file.LastWriteTime.ToString(),
-                            IsFolder = false
-                        });
-                }
-            }), DispatcherPriority.Background);
-
-            Status = string.Empty;
+                    Model = this,
+                    Path = file.FullName,
+                    Name = file.Name,
+                    Size = Helper.SizeToString(file.Length),
+                    Extension = file.Extension.Length >= 1 ? file.Extension.Substring(1).ToUpper() : "",
+                    Date = file.LastWriteTime.ToString(),
+                    IsFolder = false
+                });
+            }
         }
 
         public void NavigateLocalUp()
@@ -418,13 +409,15 @@ namespace FreeLeaf.Model
         public async void NavigateRemote(string path)
         {
             RemotePath = path;
-            remoteFiles.Clear();
+            RemoteFiles.Clear();
 
             var json = await SendMessageWithReceive("list:" + path);
             JArray array;
 
             try { array = JArray.Parse(json); }
             catch { return; }
+
+            var temp = new List<FileItem>();
 
             foreach (var obj in array)
             {
@@ -444,7 +437,7 @@ namespace FreeLeaf.Model
                 var date = new DateTime(1970, 1, 1, 0, 0, 0);
                 date = date.AddMilliseconds(obj.Value<long>("date"));
 
-                RemoteFiles.Add(new FileItem()
+                temp.Add(new FileItem()
                 {
                     Model = this,
                     Path = rpath,
@@ -456,6 +449,15 @@ namespace FreeLeaf.Model
                     IsRemote = true
                 });
             }
+
+            temp.Sort(new Comparison<FileItem>((t1, t2) =>
+            {
+                if (t1.IsFolder && !t2.IsFolder) return -1;
+                else if(!t1.IsFolder && t2.IsFolder) return 1;
+                return string.Compare(t1.Name, t2.Name, true);
+            }));
+
+            RemoteFiles = new ObservableCollection<FileItem>(temp);
         }
 
         public async void NavigateRemoteUp()
@@ -495,11 +497,11 @@ namespace FreeLeaf.Model
 
             if (dropInfo.Data is List<FileItem>)
             {
-                var dragItems = dropInfo.Data as List<FileItem>;
-                foreach (var item in dragItems)
+                var items = dropInfo.Data as List<FileItem>;
+                foreach (var item in items)
                 {
                     if (item.IsFolder) continue;
-                    if (!Queue.Contains(item))
+                    if (Queue.FirstOrDefault(t => t.Path.Equals(item.Path)) == null)
                     {
                         item.Progress = 0;
                         item.Destination = path;
@@ -509,14 +511,14 @@ namespace FreeLeaf.Model
             }
             else if (dropInfo.Data is FileItem)
             {
-                var dragItem = dropInfo.Data as FileItem;
-                if (!dragItem.IsFolder)
+                var item = dropInfo.Data as FileItem;
+                if (!item.IsFolder)
                 {
-                    if (!Queue.Contains(dragItem))
+                    if (Queue.FirstOrDefault(t => t.Path.Equals(item.Path)) == null)
                     {
-                        dragItem.Progress = 0;
-                        dragItem.Destination = path;
-                        Queue.Add(dragItem);
+                        item.Progress = 0;
+                        item.Destination = path;
+                        Queue.Add(item);
                     }
                 }
             }
