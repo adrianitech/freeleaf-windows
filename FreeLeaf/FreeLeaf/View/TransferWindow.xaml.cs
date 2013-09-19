@@ -1,7 +1,9 @@
 ﻿using FreeLeaf.Model;
+using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -39,16 +41,34 @@ namespace FreeLeaf.View
 
         private void ButtonLocalDelete_Click(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show("Doy y dsfjdsklf",
-                " das das dhasjk hd jkahjk dsa", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            foreach (FileItem item in ListLocal.SelectedItems)
             {
-                FileItem[] items = new FileItem[ListLocal.SelectedItems.Count];
-                ListLocal.SelectedItems.CopyTo(items, 0);
-
-                foreach(var item in items)
+                try
                 {
-                    model.LocalDrive.Remove(item);
+                    if (item.IsFolder)
+                        FileSystem.DeleteDirectory(item.Path, UIOption.AllDialogs, RecycleOption.SendToRecycleBin);
+                    else
+                        FileSystem.DeleteFile(item.Path, UIOption.AllDialogs, RecycleOption.SendToRecycleBin);
                 }
+                catch
+                {
+                }
+            }
+
+            model.NavigateLocal(model.LocalPath);
+        }
+        
+        private async void ButtonRemoteDelete_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("Do you really want to delete the selected items?",
+                "Delete selected items", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                foreach (FileItem item in ListRemote.SelectedItems)
+                {
+                    await model.SendMessageWithReceive("delete:" + item.Path);
+                }
+
+                model.NavigateRemote(model.RemotePath);
             }
         }
 
@@ -76,15 +96,25 @@ namespace FreeLeaf.View
             {
                 if (item.IsFolder)
                 {
-                    model.PopulateRemoteFolder(item.Path);
+                    model.NavigateRemote(item.Path);
                 }
             }
         }
 
-        private void Hyperlink_Click_1(object sender, RoutedEventArgs e)
+        private void ButtonQueue_Click(object sender, RoutedEventArgs e)
         {
             var queue = new QueueWindow() { Owner = this };
             queue.ShowDialog();
+        }
+
+        private void ButtonLocalRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            model.NavigateLocal(model.LocalPath);
+        }
+
+        private void ButtonRemoteRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            model.NavigateRemote(model.RemotePath);
         }
     }
 }

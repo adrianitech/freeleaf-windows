@@ -38,9 +38,32 @@
                         <Path Data="M462,256c0,113.771-92.229,206-206,206S50,369.771,50,256S142.229,50,256,50S462,142.229,462,256zM422,256c0-91.755-74.258-166-166-166c-91.755,0-166,74.259-166,166c0,91.755,74.258,166,166,166C347.755,422,422,347.741,422,256zM325.329,362.49l-67.327-67.324l-67.329,67.332l-36.164-36.186l67.314-67.322l-67.321-67.317l36.185-36.164l67.31,67.301l67.3-67.309l36.193,36.17l-67.312,67.315l67.32,67.31L325.329,362.49z"
         					  Stretch="Uniform" Fill="#333333" Height="18" />
                     </Button>
+                    <Rectangle Margin="5,10" Width="1" Fill="#FFCBCBCB" />
+                    <Button Width="48" ToolTip="Refresh" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonLocalRefresh_Click">
+                        <Path Data="M373.223,142.573l-37.252,37.253c-20.225-20.224-48.162-32.731-79.021-32.731c-61.719,0-111.752,50.056-111.752,111.776c0,0.016,0-0.016,0,0h43.412l-69.342,69.315L50,258.871h42.514c0-0.008,0,0.006,0,0c0-90.816,73.621-164.46,164.436-164.46C302.357,94.411,343.467,112.816,373.223,142.573z M462,253.129l-69.268-69.316l-69.342,69.316h43.412c0,0.016,0-0.017,0,0c0,61.72-50.033,111.776-111.752,111.776c-30.859,0-58.797-12.508-79.021-32.731l-37.252,37.253c29.758,29.757,70.867,48.162,116.273,48.162c90.814,0,164.436-73.644,164.436-164.459c0-0.007,0,0.008,0,0H462z"
+        					  Stretch="Uniform" Fill="#333333" Height="16" />
+                    </Button>
                 </StackPanel>
+                <Button Width="48" ToolTip="Queue" HorizontalAlignment="Center" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonQueue_Click">
+                    <Grid>
+                        <Path Data="M256,90c44.34,0,86.026,17.267,117.38,48.62C404.732,169.974,422,211.66,422,256s-17.268,86.026-48.62,117.38C342.026,404.733,300.34,422,256,422c-44.34,0-86.026-17.267-117.38-48.62C107.267,342.026,90,300.34,90,256s17.267-86.026,48.62-117.38C169.974,107.267,211.66,90,256,90z M256,50C142.229,50,50,142.229,50,256s92.229,206,206,206s206-92.229,206-206S369.771,50,256,50z M359.97,210.212H156.03v-32.175H359.97V210.212z M359.97,239.912H156.03v32.175H359.97V239.912z M359.97,301.787H156.03v32.175H359.97V301.787z"
+        			          Stretch="Uniform" Fill="#333333" Height="18" />
+                        <Grid VerticalAlignment="Bottom" HorizontalAlignment="Left">
+                            <Grid.RenderTransform>
+                                <TranslateTransform X="10" Y="5" />
+                            </Grid.RenderTransform>
+                            <Rectangle Fill="#e4715f" RadiusX="5" RadiusY="5" />
+                            <TextBlock Text="{Binding Queue.Count}" Margin="4,2" Foreground="White" FontSize="9" />
+                        </Grid>
+                    </Grid>
+                </Button>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Width="48" ToolTip="Delete" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonLocalRename_Click">
+                    <Button Width="48" ToolTip="Refresh" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonRemoteRefresh_Click">
+                        <Path Data="M373.223,142.573l-37.252,37.253c-20.225-20.224-48.162-32.731-79.021-32.731c-61.719,0-111.752,50.056-111.752,111.776c0,0.016,0-0.016,0,0h43.412l-69.342,69.315L50,258.871h42.514c0-0.008,0,0.006,0,0c0-90.816,73.621-164.46,164.436-164.46C302.357,94.411,343.467,112.816,373.223,142.573z M462,253.129l-69.268-69.316l-69.342,69.316h43.412c0,0.016,0-0.017,0,0c0,61.72-50.033,111.776-111.752,111.776c-30.859,0-58.797-12.508-79.021-32.731l-37.252,37.253c29.758,29.757,70.867,48.162,116.273,48.162c90.814,0,164.436-73.644,164.436-164.459c0-0.007,0,0.008,0,0H462z"
+        					  Stretch="Uniform" Fill="#333333" Height="16" />
+                    </Button>
+                    <Rectangle Margin="5,10" Width="1" Fill="#FFCBCBCB" />
+                    <Button Width="48" ToolTip="Delete" Style="{StaticResource ToolbarButtonStyle}" Click="ButtonRemoteDelete_Click">
                         <Path Data="M462,256c0,113.771-92.229,206-206,206S50,369.771,50,256S142.229,50,256,50S462,142.229,462,256zM422,256c0-91.755-74.258-166-166-166c-91.755,0-166,74.259-166,166c0,91.755,74.258,166,166,166C347.755,422,422,347.741,422,256zM325.329,362.49l-67.327-67.324l-67.329,67.332l-36.164-36.186l67.314-67.322l-67.321-67.317l36.185-36.164l67.31,67.301l67.3-67.309l36.193,36.17l-67.312,67.315l67.32,67.31L325.329,362.49z"
         					  Stretch="Uniform" Fill="#333333" Height="18" />
                     </Button>
@@ -80,7 +103,7 @@
                 </ListView>
             </Border>
             <Border Grid.Column="2" BorderThickness="1,1,0,0" BorderBrush="#d6d6d6">
-                <ListView x:Name="ListLocal1" ItemsSource="{Binding RemoteFiles}" MouseDoubleClick="RemoteList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}" Tag="{Binding RemotePath}"
+                <ListView x:Name="ListRemote" ItemsSource="{Binding RemoteFiles}" MouseDoubleClick="RemoteList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}" Tag="{Binding RemotePath}"
                           IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
@@ -99,11 +122,8 @@
                 <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Left">
                     <Run Text="{Binding ElementName=ListLocal, Path=SelectedItems.Count, Mode=OneWay}" />/<Run Text="{Binding Items.Count, ElementName=ListLocal, Mode=OneWay}" /> item(s) selected
                 </TextBlock>
-                <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Hyperlink Click="Hyperlink_Click_1"><Run Text="{Binding Path=Queue.Count, Mode=OneWay}" /> item(s) in queue</Hyperlink>
-                </TextBlock>
                 <TextBlock Foreground="White" FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right">
-                    <Run Text="{Binding ElementName=ListLocal1, Path=SelectedItems.Count, Mode=OneWay}" />/<Run Text="{Binding Items.Count, ElementName=ListLocal1, Mode=OneWay}" /> item(s) selected
+                    <Run Text="{Binding ElementName=ListRemote, Path=SelectedItems.Count, Mode=OneWay}" />/<Run Text="{Binding Items.Count, ElementName=ListRemote, Mode=OneWay}" /> item(s) selected
                 </TextBlock>
             </Grid>
         </Border>

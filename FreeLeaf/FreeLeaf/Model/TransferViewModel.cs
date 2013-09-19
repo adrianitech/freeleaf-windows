@@ -1,8 +1,6 @@
-﻿using FreeLeaf.View;
-using GalaSoft.MvvmLight;
+﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GongSolutions.Wpf.DragDrop;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -24,6 +22,8 @@ namespace FreeLeaf.Model
 {
     public class TransferViewModel : ViewModelBase, IDropTarget
     {
+        #region Properties
+
         private DeviceItem device;
         public bool forceStop;
 
@@ -104,6 +104,10 @@ namespace FreeLeaf.Model
             }
         }
 
+        #endregion
+
+        #region Constructor
+
         public TransferViewModel()
         {
             if (IsInDesignMode) return;
@@ -115,69 +119,82 @@ namespace FreeLeaf.Model
             NavigateLocalHome();
         }
 
-        private void SendMessage(string message)
+        public async void SetDevice(DeviceItem item)
         {
-            TcpClient client = new TcpClient();
+            remoteFiles.Clear();
+            device = item;
 
-            try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
-            catch { return; }
+            var root = await SendMessageWithReceive("root");
+            if (root == null) return;
 
-            NetworkStream ns = client.GetStream();
-
-            byte[] buffer = Encoding.UTF8.GetBytes(message);
-            ns.Write(buffer, 0, buffer.Length);
-
-            client.Close();
+            NavigateRemote(root);
         }
 
-        private string SendMessageWithReceive(string message)
+        #endregion
+
+        #region Tcp
+
+        public Task SendMessage(string message)
         {
-            TcpClient client = new TcpClient();
-
-            try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
-            catch { return null; }
-
-            NetworkStream ns = client.GetStream();
-
-            byte[] buffer = Encoding.UTF8.GetBytes(message);
-            ns.Write(buffer, 0, buffer.Length);
-
-            buffer = new byte[4096];
-            MemoryStream ms = new MemoryStream();
-
-            int bytesRead = 0;
-
-            while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+            return Task.Run(() =>
             {
-                ms.Write(buffer, 0, bytesRead);
-            }
-
-            return Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Length);
-        }
-
-        public void NavigateLocalHome()
-        {
-            LocalPath = "/";
-            LocalDrive.Clear();
-
-            var drives = DriveInfo.GetDrives();
-            foreach (var drive in drives)
-            {
-                if (!drive.IsReady) continue;
-
-                LocalDrive.Add(new FileItem()
+                using (var client = new TcpClient())
                 {
-                    Path = drive.Name,
-                    Name = string.Format("{0} ({1})",
-                        string.IsNullOrEmpty(drive.VolumeLabel) ?
-                        drive.DriveType.ToString() :
-                        drive.VolumeLabel,
-                        drive.Name.Substring(0, drive.Name.Length - 1)),
-                    Size = Helper.SizeToString(drive.TotalSize),
-                    Extension = drive.DriveFormat,
-                    IsFolder = true
-                });
-            }
+                    try
+                    {
+                        client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080));
+                    }
+                    catch
+                    {
+                        return;
+                    }
+
+                    using (var ns = client.GetStream())
+                    {
+                        var buffer = Encoding.UTF8.GetBytes(message);
+                        ns.Write(buffer, 0, buffer.Length);
+                    }
+                }
+            });
+        }
+
+        public Task<string> SendMessageWithReceive(string message)
+        {
+            return Task.Run<string>(() =>
+            {
+                string msg = null;
+
+                using (var client = new TcpClient())
+                {
+                    try
+                    {
+                        client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080));
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+
+                    using (var ns = client.GetStream())
+                    {
+                        var buffer = Encoding.UTF8.GetBytes(message);
+                        ns.Write(buffer, 0, buffer.Length);
+
+                        int bytesRead = 0;
+                        buffer = new byte[4096];
+                        var ms = new MemoryStream();
+
+                        while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            ms.Write(buffer, 0, bytesRead);
+                        }
+
+                        msg = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Length);
+                    }
+                }
+
+                return msg;
+            });
         }
 
         public Task SendFile(FileItem item)
@@ -240,9 +257,9 @@ namespace FreeLeaf.Model
 
         public Task ReceiveFile(FileItem item)
         {
-            return Task.Run(() =>
+            return Task.Run(async() =>
             {
-                var value = SendMessageWithReceive("receive:" + item.Path);
+                var value = await SendMessageWithReceive("receive:" + item.Path);
                 long size = long.Parse(value);
 
                 TcpClient client = new TcpClient();
@@ -295,8 +312,43 @@ namespace FreeLeaf.Model
             });
         }
 
+        #endregion
+
+        #region Local
+
+        public void NavigateLocalHome()
+        {
+            LocalPath = "/";
+            LocalDrive.Clear();
+
+            var drives = DriveInfo.GetDrives();
+            foreach (var drive in drives)
+            {
+                if (!drive.IsReady) continue;
+
+                LocalDrive.Add(new FileItem()
+                {
+                    Path = drive.Name,
+                    Name = string.Format("{0} ({1})",
+                        string.IsNullOrEmpty(drive.VolumeLabel) ?
+                        drive.DriveType.ToString() :
+                        drive.VolumeLabel,
+                        drive.Name.Substring(0, drive.Name.Length - 1)),
+                    Size = Helper.SizeToString(drive.TotalSize),
+                    Extension = drive.DriveFormat,
+                    IsFolder = true
+                });
+            }
+        }
+
         public async void NavigateLocal(string path)
         {
+            if (path == "/")
+            {
+                NavigateLocalHome();
+                return;
+            }
+
             Status = "Populating folder";
             LocalPath = path;
             LocalDrive.Clear();
@@ -355,18 +407,16 @@ namespace FreeLeaf.Model
             else NavigateLocal(info.FullName);
         }
 
-        public void NavigateRemoteUp()
-        {
-            var parent = SendMessageWithReceive("up:" + RemotePath);
-            PopulateRemoteFolder(parent);
-        }
+        #endregion
 
-        public void PopulateRemoteFolder(string path)
+        #region Remote
+
+        public async void NavigateRemote(string path)
         {
             RemotePath = path;
             remoteFiles.Clear();
 
-            var json = SendMessageWithReceive("list:" + path);
+            var json = await SendMessageWithReceive("list:" + path);
             JArray array;
 
             try { array = JArray.Parse(json); }
@@ -404,25 +454,22 @@ namespace FreeLeaf.Model
             }
         }
 
-        
-
-        public void SetDevice(DeviceItem item)
+        public async void NavigateRemoteUp()
         {
-            remoteFiles.Clear();
-            device = item;
-
-            var root = SendMessageWithReceive("root");
-            if (root == null) return;
-
-            PopulateRemoteFolder(root);
+            var parent = await SendMessageWithReceive("up:" + RemotePath);
+            NavigateRemote(parent);
         }
+
+        #endregion
+
+        #region Drag n' Drop
 
         public void DragOver(IDropInfo dropInfo)
         {
             if (dropInfo.DragInfo.VisualSource != dropInfo.VisualTarget)
             {
                 if (dropInfo.TargetItem is FileItem && (dropInfo.TargetItem as FileItem).IsFolder)
-                    dropInfo.DropTargetAdorner = typeof(sss);
+                    dropInfo.DropTargetAdorner = typeof(CustomDropAdorner);
                 dropInfo.Effects = DragDropEffects.Copy;
             }
         }
@@ -450,6 +497,7 @@ namespace FreeLeaf.Model
                     if (item.IsFolder) continue;
                     if (!Queue.Contains(item))
                     {
+                        item.Progress = 0;
                         item.Destination = path;
                         Queue.Add(item);
                     }
@@ -462,17 +510,20 @@ namespace FreeLeaf.Model
                 {
                     if (!Queue.Contains(dragItem))
                     {
+                        dragItem.Progress = 0;
                         dragItem.Destination = path;
                         Queue.Add(dragItem);
                     }
                 }
             }
         }
+
+        #endregion
     }
 
-    public class sss : DropTargetAdorner
+    public class CustomDropAdorner : DropTargetAdorner
     {
-        public sss(UIElement adornedElement)
+        public CustomDropAdorner(UIElement adornedElement)
             : base(adornedElement)
         {
             SetValue(RenderOptions.EdgeModeProperty, EdgeMode.Aliased);
@@ -490,7 +541,6 @@ namespace FreeLeaf.Model
             }
         }
     }
-
 
     public class FileItem : ObservableObject
     {

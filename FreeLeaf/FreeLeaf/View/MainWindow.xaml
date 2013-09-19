@@ -15,9 +15,9 @@
     
     <Grid>
         <ListView x:Name="DeviceList" ItemsSource="{Binding Items}" ItemContainerStyle="{StaticResource ColorListViewItemStyle}"
-                  ItemTemplateSelector="{StaticResource ColorListItemTemplateSelector}"
+                  SelectionMode="Single" ItemTemplateSelector="{StaticResource ColorListItemTemplateSelector}"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="False"
-                  MouseLeftButtonUp="ListView_MouseLeftButtonUp">
+                  SelectionChanged="DeviceList_SelectionChanged">
             <ListView.Style>
                 <Style TargetType="ListView">
                     <Setter Property="Template">

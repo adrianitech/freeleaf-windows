@@ -36,7 +36,7 @@ namespace FreeLeaf.Model
 
             items.Add(new DeviceItem()
             {
-                Username = "Connect via IP address",
+                Name = "Connect via IP address",
                 Color = "#e4715f"
             });
 
@@ -75,7 +75,7 @@ namespace FreeLeaf.Model
                             var newItem = new DeviceItem()
                             {
                                 ID = id,
-                                Username = array[1].Value<string>(),
+                                Name = array[1].Value<string>(),
                                 Device = array[2].Value<string>(),
                                 Battery = array[3].Value<string>(),
                                 Storage = array[4].Value<string>(),
@@ -87,7 +87,7 @@ namespace FreeLeaf.Model
                         }
                         else
                         {
-                            item.Username = array[1].Value<string>();
+                            item.Name = array[1].Value<string>();
                             item.Battery = array[3].Value<string>();
                             item.Storage = array[4].Value<string>();
                             item.LastUpdated = 0;
@@ -130,22 +130,26 @@ namespace FreeLeaf.Model
 
     public class DeviceItem : ObservableObject
     {
-        public string Name
+        public int LastUpdated = 0;
+
+        private string id;
+        public string ID
         {
-            get
+            get { return id; }
+            set
             {
-                return string.Concat(username, "'s ", device);
+                id = value;
+                RaisePropertyChanged("ID");
             }
         }
 
-        private string username;
-        public string Username
+        private string name;
+        public string Name
         {
-            get { return username; }
+            get { return name; }
             set
             {
-                username = value;
-                RaisePropertyChanged("Username");
+                name = value;
                 RaisePropertyChanged("Name");
             }
         }
@@ -158,7 +162,6 @@ namespace FreeLeaf.Model
             {
                 device = value;
                 RaisePropertyChanged("Device");
-                RaisePropertyChanged("Name");
             }
         }
 
@@ -173,17 +176,6 @@ namespace FreeLeaf.Model
             }
         }
 
-        private string id;
-        public string ID
-        {
-            get { return id; }
-            set
-            {
-                id = value;
-                RaisePropertyChanged("ID");
-            }
-        }
-
         private string color;
         public string Color
         {
@@ -195,7 +187,7 @@ namespace FreeLeaf.Model
             }
         }
 
-        private string battery = "-";
+        private string battery;
         public string Battery
         {
             get { return battery; }
@@ -206,7 +198,7 @@ namespace FreeLeaf.Model
             }
         }
 
-        private string storage = "-";
+        private string storage;
         public string Storage
         {
             get { return storage; }
@@ -214,17 +206,6 @@ namespace FreeLeaf.Model
             {
                 storage = value;
                 RaisePropertyChanged("Storage");
-            }
-        }
-
-        private int lastUpdated = 0;
-        public int LastUpdated
-        {
-            get { return lastUpdated; }
-            set
-            {
-                lastUpdated = value;
-                RaisePropertyChanged("LastUpdated");
             }
         }
     }
