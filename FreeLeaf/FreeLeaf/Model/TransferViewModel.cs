@@ -22,6 +22,8 @@ namespace FreeLeaf.Model
 {
     public class TransferViewModel : ViewModelBase, IDropTarget
     {
+        int PORT = 8080;
+
         #region Properties
 
         private DeviceItem device;
@@ -142,7 +144,7 @@ namespace FreeLeaf.Model
                 {
                     try
                     {
-                        client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080));
+                        client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), PORT));
                     }
                     catch
                     {
@@ -168,7 +170,7 @@ namespace FreeLeaf.Model
                 {
                     try
                     {
-                        client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080));
+                        client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), PORT));
                     }
                     catch
                     {
@@ -199,15 +201,15 @@ namespace FreeLeaf.Model
 
         public Task SendFile(FileItem item)
         {
-            return Task.Run(() =>
+            return Task.Run(async() =>
             {
                 var info = new FileInfo(item.Path);
                 var size = info.Length;
 
-                SendMessage(string.Format("send:{0}:{1}:{2}", item.Name, item.Destination, size));
+                await SendMessage(string.Format("send:{0}:{1}:{2}", item.Name, item.Destination, size));
 
                 TcpClient client = new TcpClient();
-                try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
+                try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), PORT)); }
                 catch { return; }
 
                 NetworkStream ns = client.GetStream();
@@ -225,6 +227,8 @@ namespace FreeLeaf.Model
                     if (forceStop) break;
 
                     ns.Write(buffer, 0, bytesRead);
+                    ns.Flush();
+
                     bytesTotal += bytesRead;
                     lastRead += bytesRead;
 
@@ -263,7 +267,7 @@ namespace FreeLeaf.Model
                 long size = long.Parse(value);
 
                 TcpClient client = new TcpClient();
-                try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), 8080)); }
+                try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), PORT)); }
                 catch { return; }
 
                 NetworkStream ns = client.GetStream();

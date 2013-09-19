@@ -49,7 +49,6 @@ namespace FreeLeaf.View
                 i--;
             }
 
-            //ButtonStartStop.Content = "START";
             model.IsBusy = false;
         }
     }
