@@ -23,47 +23,34 @@ namespace FreeLeaf.Model
             return string.Format("{0:0.##} {1}", len, sizes[order]);
         }
 
-        public static string getTimeToETA(long timeLeft)
+        public static string getTimeToETA(double sec)
         {
-            string msgLeft;
+            var ts = TimeSpan.FromSeconds(sec);
 
-            if (timeLeft < 60)
+            if (ts.Hours == 1)
             {
-                if (timeLeft == 1)
-                {
-                    msgLeft = " second left";
-                }
-                else
-                {
-                    msgLeft = " seconds left";
-                }
+                return "1 hour remaining";
             }
-            else if (timeLeft < 3600)
+            else if (ts.Hours > 1)
             {
-                timeLeft /= 60;
-                if (timeLeft == 1)
-                {
-                    msgLeft = " minute left";
-                }
-                else
-                {
-                    msgLeft = " minutes left";
-                }
+                return ts.Hours + " hours remaining";
+            }
+            else if (ts.Minutes == 1)
+            {
+                return "1 minute remaining";
+            }
+            else if (ts.Minutes > 1)
+            {
+                return ts.Minutes + " minutes remaining";
+            }
+            else if (ts.Seconds == 1)
+            {
+                return "1 second remaining";
             }
             else
             {
-                timeLeft /= 3600;
-                if (timeLeft == 1)
-                {
-                    msgLeft = " hour left";
-                }
-                else
-                {
-                    msgLeft = " hours left";
-                }
+                return ts.Seconds + " seconds remaining";
             }
-
-            return timeLeft + msgLeft;
         }
     }
 }

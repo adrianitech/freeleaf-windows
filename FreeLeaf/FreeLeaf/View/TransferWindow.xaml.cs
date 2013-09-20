@@ -76,7 +76,7 @@ namespace FreeLeaf.View
             {
                 foreach (FileItem item in ListRemote.SelectedItems)
                 {
-                    await model.SendMessageWithReceive("delete:" + item.Path);
+                    await model.SendCommand("delete:" + item.Path);
                 }
 
                 model.NavigateRemote(model.RemotePath);

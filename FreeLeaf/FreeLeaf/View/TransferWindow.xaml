@@ -4,7 +4,7 @@
         xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
         DataContext="{Binding Path=Transfer, Source={StaticResource Locator}}"
         Title="FreeLeaf" Height="650" Width="1200" MinHeight="580" MinWidth="960" Background="White"
-        WindowStartupLocation="CenterScreen" FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True">
+        WindowStartupLocation="CenterScreen" FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True" Icon="/FreeLeaf;component/Assets/icon.ico">
     
     <Window.Resources>
         <DataTemplate x:Key="GridViewCellTemplate">

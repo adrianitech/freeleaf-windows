@@ -4,7 +4,7 @@
         xmlns:model="clr-namespace:FreeLeaf.Model"
         DataContext="{Binding Path=Transfer, Source={StaticResource Locator}}"
         Title="Queue" Height="600" Width="450" MinWidth="450" MinHeight="400" WindowStartupLocation="CenterOwner" Background="White"
-        FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True" ResizeMode="CanResize" ShowInTaskbar="False">
+        FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True" ResizeMode="CanResize" ShowInTaskbar="False" Icon="/FreeLeaf;component/Assets/icon.ico">
     
     <Window.Resources>
         <model:NegateBooleanConverter x:Key="NegateBooleanConverter" />

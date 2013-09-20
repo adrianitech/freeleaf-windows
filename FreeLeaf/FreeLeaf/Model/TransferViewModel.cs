@@ -22,12 +22,22 @@ namespace FreeLeaf.Model
 {
     public class TransferViewModel : ViewModelBase, IDropTarget
     {
-        int PORT = 8080;
+        #region Internal
 
-        #region Properties
+        private const int PORT = 8080;
 
         private DeviceItem device;
         public bool forceStop;
+
+        private int secElapsed, bytesSeqRead;
+        private long bytesTotalRead, bytesTotal;
+        private FileItem currentItem;
+
+        private DispatcherTimer timerProgress;
+
+        #endregion
+
+        #region Properties
 
         private bool isBusy;
         public bool IsBusy
@@ -95,17 +105,6 @@ namespace FreeLeaf.Model
             }
         }
 
-        private string status;
-        public string Status
-        {
-            get { return status; }
-            set
-            {
-                status = value;
-                RaisePropertyChanged("Status");
-            }
-        }
-
         #endregion
 
         #region Constructor
@@ -119,6 +118,26 @@ namespace FreeLeaf.Model
             remoteFiles = new ObservableCollection<FileItem>();
 
             NavigateLocalHome();
+
+            timerProgress = new DispatcherTimer() { Interval = TimeSpan.FromSeconds(1) };
+            timerProgress.Tick += TimerProgress_Tick;
+        }
+
+        private void TimerProgress_Tick(object sender, EventArgs e)
+        {
+            currentItem.ProgressSize = Helper.SizeToString(bytesTotalRead);
+            currentItem.Progress = 100 * bytesTotalRead / (double)bytesTotal;
+            currentItem.Speed = Helper.SizeToString(bytesSeqRead) + "/s";
+
+            if (bytesTotalRead != 0)
+            {
+                long bytesRemaining = bytesTotal - bytesTotalRead;
+                double secRemaining = bytesRemaining * secElapsed / (double)bytesTotalRead;
+                currentItem.TimeLeft = Helper.getTimeToETA(secRemaining + 1);
+            }
+
+            bytesSeqRead = 0;
+            secElapsed++;
         }
 
         public async void SetDevice(DeviceItem item)
@@ -126,7 +145,7 @@ namespace FreeLeaf.Model
             remoteFiles.Clear();
             device = item;
 
-            var root = await SendMessageWithReceive("root");
+            var root = await SendCommand("root");
             if (root == null) return;
 
             NavigateRemote(root);
@@ -136,31 +155,7 @@ namespace FreeLeaf.Model
 
         #region Tcp
 
-        public Task SendMessage(string message)
-        {
-            return Task.Run(() =>
-            {
-                using (var client = new TcpClient())
-                {
-                    try
-                    {
-                        client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), PORT));
-                    }
-                    catch
-                    {
-                        return;
-                    }
-
-                    using (var ns = client.GetStream())
-                    {
-                        var buffer = Encoding.UTF8.GetBytes(message);
-                        ns.Write(buffer, 0, buffer.Length);
-                    }
-                }
-            });
-        }
-
-        public Task<string> SendMessageWithReceive(string message)
+        public Task<string> SendCommand(string message)
         {
             return Task.Run<string>(() =>
             {
@@ -168,30 +163,29 @@ namespace FreeLeaf.Model
 
                 using (var client = new TcpClient())
                 {
-                    try
-                    {
-                        client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), PORT));
-                    }
-                    catch
-                    {
-                        return null;
-                    }
+                    client.NoDelay = true;
+                    client.ReceiveBufferSize = 8192;
+                    client.SendBufferSize = 8192;
+                    client.Connect(device.Address, PORT);
 
                     using (var ns = client.GetStream())
                     {
-                        var buffer = Encoding.UTF8.GetBytes(message);
+                        byte[] buffer = Encoding.UTF8.GetBytes(message);
+
                         ns.Write(buffer, 0, buffer.Length);
+                        ns.Flush();
 
                         int bytesRead = 0;
-                        buffer = new byte[4096];
-                        var ms = new MemoryStream();
+                        buffer = new byte[8192];
 
-                        while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+                        using (var ms = new MemoryStream())
                         {
-                            ms.Write(buffer, 0, bytesRead);
+                            while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                ms.Write(buffer, 0, bytesRead);
+                            }
+                            msg = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Length);
                         }
-
-                        msg = Encoding.UTF8.GetString(ms.GetBuffer(), 0, (int)ms.Length);
                     }
                 }
 
@@ -201,118 +195,103 @@ namespace FreeLeaf.Model
 
         public Task SendFile(FileItem item)
         {
-            return Task.Run(async() =>
+            return Task.Run(async () =>
             {
                 var info = new FileInfo(item.Path);
                 var size = info.Length;
 
-                await SendMessage(string.Format("send:{0}:{1}:{2}", item.Name, item.Destination, size));
-
-                TcpClient client = new TcpClient();
-                try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), PORT)); }
-                catch { return; }
-
-                NetworkStream ns = client.GetStream();
+                await SendCommand(string.Format("send:{0}:{1}:{2}", item.Name, item.Destination, size));
 
                 int bytesRead = 0;
-                long bytesTotal = 0, lastRead = 0, lastLeft = 0;
                 byte[] buffer = new byte[8192];
 
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
+                secElapsed = 0;
+                bytesTotalRead = 0;
+                bytesSeqRead = 0;
+                bytesTotal = size;
+                currentItem = item;
 
-                var stream = info.OpenRead();
-                while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                using (var stream = info.OpenRead())
                 {
-                    if (forceStop) break;
-
-                    ns.Write(buffer, 0, bytesRead);
-                    ns.Flush();
-
-                    bytesTotal += bytesRead;
-                    lastRead += bytesRead;
-
-                    long diff = stopwatch.ElapsedMilliseconds;
-                    if (diff >= 1000)
+                    using (var client = new TcpClient())
                     {
-                        item.ProgressSize = Helper.SizeToString(bytesTotal);
-                        item.Progress = 100 * bytesTotal / (double)size;
-                        item.Speed = Helper.SizeToString(lastRead) + "/s";
+                        client.NoDelay = true;
+                        client.ReceiveBufferSize = 8192;
+                        client.SendBufferSize = 8192;
+                        client.Connect(device.Address, PORT);
 
-                        double t1 = (size - bytesTotal) / (double)lastRead;
-                        double t2 = diff / (double)1000;
-                        long timeLeft = (int)(t1 / t2) + 1;
+                        using (var ns = client.GetStream())
+                        {
+                            timerProgress.Start();
 
-                        if (lastLeft == 0) lastLeft = timeLeft;
-                        if (timeLeft > lastLeft) timeLeft = lastLeft + 1;
-                        lastLeft = timeLeft;
+                            while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                if (forceStop) break;
+                                ns.Write(buffer, 0, bytesRead);
 
-                        item.TimeLeft = Helper.getTimeToETA(timeLeft);
+                                bytesTotalRead += bytesRead;
+                                bytesSeqRead += bytesRead;
+                            }
+                            ns.Flush();
+                        }
 
-                        lastRead = 0;
-                        stopwatch.Restart();
+                        timerProgress.Stop();
+                        currentItem = null;
                     }
                 }
-
-                client.Close();
-                stream.Close();
             });
         }
 
         public Task ReceiveFile(FileItem item)
         {
-            return Task.Run(async() =>
+            return Task.Run(async () =>
             {
-                var value = await SendMessageWithReceive("receive:" + item.Path);
+                string value = await SendCommand("receive:" + item.Path);
                 long size = long.Parse(value);
 
-                TcpClient client = new TcpClient();
-                try { client.Connect(new IPEndPoint(IPAddress.Parse(device.Address), PORT)); }
-                catch { return; }
-
-                NetworkStream ns = client.GetStream();
-                byte[] buffer = Encoding.UTF8.GetBytes("receive");
-                ns.Write(buffer, 0, buffer.Length);
-
                 int bytesRead = 0;
-                long bytesTotal = 0, lastRead = 0, lastLeft = 0;
-                buffer = new byte[8192];
 
-                var stopwatch = new Stopwatch();
-                stopwatch.Start();
+                secElapsed = 0;
+                bytesTotalRead = 0;
+                bytesSeqRead = 0;
+                bytesTotal = size;
+                currentItem = item;
 
-                var stream = File.OpenWrite(Path.Combine(item.Destination, item.Name));
-                while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+                using (var client = new TcpClient())
                 {
-                    if (forceStop) break;
+                    client.NoDelay = true;
+                    client.ReceiveBufferSize = 8192;
+                    client.SendBufferSize = 8192;
+                    client.Connect(device.Address, PORT);
 
-                    stream.Write(buffer, 0, bytesRead);
-                    bytesTotal += bytesRead;
-                    lastRead += bytesRead;
-
-                    long diff = stopwatch.ElapsedMilliseconds;
-                    if (diff >= 1000)
+                    using (var ns = client.GetStream())
                     {
-                        item.ProgressSize = Helper.SizeToString(bytesTotal);
-                        item.Progress = 100 * bytesTotal / (double)size;
-                        item.Speed = Helper.SizeToString(lastRead) + "/s";
+                        byte[] buffer = Encoding.UTF8.GetBytes("receive");
 
-                        double t1 = (size - bytesTotal) / (double)lastRead;
-                        double t2 = diff / (double)1000;
-                        long timeLeft = (int)(t1 / t2) + 1;
+                        ns.Write(buffer, 0, buffer.Length);
+                        ns.Flush();
 
-                        if (lastLeft == 0) lastLeft = timeLeft;
-                        if (timeLeft > lastLeft) timeLeft = lastLeft + 1;
-                        lastLeft = timeLeft;
+                        buffer = new byte[8192];
 
-                        item.TimeLeft = Helper.getTimeToETA(timeLeft);
+                        using (var stream = File.OpenWrite(Path.Combine(item.Destination, item.Name)))
+                        {
+                            timerProgress.Start();
 
-                        lastRead = 0;
-                        stopwatch.Restart();
+                            while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                if (forceStop) break;
+                                stream.Write(buffer, 0, bytesRead);
+
+                                bytesTotalRead += bytesRead;
+                                bytesSeqRead += bytesRead;
+                            }
+                            ns.Flush();
+                        }
+
+                        timerProgress.Stop();
+                        currentItem = null;
                     }
                 }
-
-                stream.Close();
             });
         }
 
@@ -411,7 +390,7 @@ namespace FreeLeaf.Model
             RemotePath = path;
             RemoteFiles.Clear();
 
-            var json = await SendMessageWithReceive("list:" + path);
+            var json = await SendCommand("list:" + path);
             JArray array;
 
             try { array = JArray.Parse(json); }
@@ -462,7 +441,7 @@ namespace FreeLeaf.Model
 
         public async void NavigateRemoteUp()
         {
-            var parent = await SendMessageWithReceive("up:" + RemotePath);
+            var parent = await SendCommand("up:" + RemotePath);
             NavigateRemote(parent);
         }
 

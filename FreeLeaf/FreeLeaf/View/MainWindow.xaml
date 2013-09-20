@@ -4,7 +4,7 @@
         xmlns:model="clr-namespace:FreeLeaf.Model"
         DataContext="{Binding Path=Main, Source={StaticResource Locator}}"
         Title="FreeLeaf" Width="350" Height="450" Background="White" WindowStartupLocation="CenterScreen"
-        ResizeMode="CanMinimize" FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True">
+        ResizeMode="CanMinimize" FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True" Icon="/FreeLeaf;component/Assets/icon.ico">
     
     <Window.Resources>
         <model:ColorListItemTemplateSelector 
