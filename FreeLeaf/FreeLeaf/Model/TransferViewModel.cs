@@ -1,15 +1,15 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GongSolutions.Wpf.DragDrop;
+using Microsoft.Practices.ServiceLocation;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,6 +17,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Un4seen.Bass;
 
 namespace FreeLeaf.Model
 {
@@ -24,9 +25,9 @@ namespace FreeLeaf.Model
     {
         #region Internal
 
-        private const int PORT = 8080;
+        private const int PORT = 8000;
 
-        private DeviceItem device;
+        public static DeviceItem device;
         public bool forceStop;
 
         private int secElapsed, bytesSeqRead;
@@ -109,9 +110,13 @@ namespace FreeLeaf.Model
 
         #region Constructor
 
+        public MediaStreamer mss = new MediaStreamer();
+
         public TransferViewModel()
         {
             if (IsInDesignMode) return;
+
+            Bass.BASS_Init(-1, 44100, Un4seen.Bass.BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
 
             queue = new ObservableCollection<FileItem>();
             localFiles = new ObservableCollection<FileItem>();
@@ -121,6 +126,8 @@ namespace FreeLeaf.Model
 
             timerProgress = new DispatcherTimer() { Interval = TimeSpan.FromSeconds(1) };
             timerProgress.Tick += TimerProgress_Tick;
+
+            mss = new MediaStreamer();
         }
 
         private void TimerProgress_Tick(object sender, EventArgs e)
@@ -155,7 +162,7 @@ namespace FreeLeaf.Model
 
         #region Tcp
 
-        public Task<string> SendCommand(string message)
+        public static Task<string> SendCommand(string message)
         {
             return Task.Run<string>(() =>
             {
@@ -166,7 +173,7 @@ namespace FreeLeaf.Model
                     client.NoDelay = true;
                     client.ReceiveBufferSize = 8192;
                     client.SendBufferSize = 8192;
-                    client.Connect(device.Address, PORT);
+                    client.Connect(TransferViewModel.device.Address, PORT);
 
                     using (var ns = client.GetStream())
                     {
@@ -280,12 +287,11 @@ namespace FreeLeaf.Model
                             while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
                             {
                                 if (forceStop) break;
-                                stream.Write(buffer, 0, bytesRead);
+                                //stream.Write(buffer, 0, bytesRead);
 
                                 bytesTotalRead += bytesRead;
                                 bytesSeqRead += bytesRead;
                             }
-                            ns.Flush();
                         }
 
                         timerProgress.Stop();
@@ -361,16 +367,20 @@ namespace FreeLeaf.Model
                 if (file.Attributes.HasFlag(FileAttributes.Hidden |
                        FileAttributes.System)) continue;
 
-                LocalDrive.Add(new FileItem()
-                {
-                    Model = this,
-                    Path = file.FullName,
-                    Name = file.Name,
-                    Size = Helper.SizeToString(file.Length),
-                    Extension = file.Extension.Length >= 1 ? file.Extension.Substring(1).ToUpper() : "",
-                    Date = file.LastWriteTime.ToString(),
-                    IsFolder = false
-                });
+                FileItem item;
+
+                if (MusicFileItem.IsMusicFile(file.FullName)) item = new MusicFileItem();
+                else item = new FileItem();
+
+                item.Model = this;
+                item.Path = file.FullName;
+                item.Name = file.Name;
+                item.Size = Helper.SizeToString(file.Length);
+                item.Extension = file.Extension.Length >= 1 ? file.Extension.Substring(1).ToUpper() : "";
+                item.Date = file.LastWriteTime.ToString();
+                item.IsFolder = false;
+
+                LocalDrive.Add(item);
             }
         }
 
@@ -400,9 +410,20 @@ namespace FreeLeaf.Model
 
             foreach (var obj in array)
             {
-                var name = obj.Value<string>("name");
+
+
                 var rpath = obj.Value<string>("path");
                 var folder = obj.Value<bool>("folder");
+
+
+                if (!folder && mss.CurrentItem != null && mss.CurrentItem.Path.Equals(rpath))
+                {
+                    temp.Add(mss.CurrentItem);
+                    continue;
+                }
+
+                var name = obj.Value<string>("name");
+                
 
                 var size = "";
                 if (!folder)
@@ -416,23 +437,27 @@ namespace FreeLeaf.Model
                 var date = new DateTime(1970, 1, 1, 0, 0, 0);
                 date = date.AddMilliseconds(obj.Value<long>("date"));
 
-                temp.Add(new FileItem()
-                {
-                    Model = this,
-                    Path = rpath,
-                    Name = name,
-                    Size = size,
-                    Extension = folder ? "FOLDER" : ext,
-                    Date = date.ToString(),
-                    IsFolder = folder,
-                    IsRemote = true
-                });
+                FileItem item;
+
+                if (MusicFileItem.IsMusicFile(rpath)) item = new MusicFileItem();
+                else item = new FileItem();
+
+                item.Model = this;
+                item.Path = rpath;
+                item.Name = name;
+                item.Size = size;
+                item.Extension = folder ? "FOLDER" : ext;
+                item.Date = date.ToString();
+                item.IsFolder = folder;
+                item.IsRemote = true;
+
+                temp.Add(item);
             }
 
             temp.Sort(new Comparison<FileItem>((t1, t2) =>
             {
                 if (t1.IsFolder && !t2.IsFolder) return -1;
-                else if(!t1.IsFolder && t2.IsFolder) return 1;
+                else if (!t1.IsFolder && t2.IsFolder) return 1;
                 return string.Compare(t1.Name, t2.Name, true);
             }));
 
@@ -671,6 +696,50 @@ namespace FreeLeaf.Model
                 return new RelayCommand(new Action(() =>
                 {
                     Model.Queue.Remove(this);
+                }));
+            }
+        }
+    }
+
+    public class MusicFileItem : FileItem
+    {
+        public static string[] Formats = new string[] { ".mp3", ".m4a", ".aac", ".wav" };
+
+        public static bool IsMusicFile(string path)
+        {
+            var ext = System.IO.Path.GetExtension(path).ToLower();
+            return Formats.Contains(ext);
+        }
+
+        private double vuValue;
+        public double VuValue
+        {
+            get { return vuValue; }
+            set
+            {
+                vuValue = value;
+                RaisePropertyChanged("VuValue");
+            }
+        }
+
+        private bool isPlaying;
+        public bool IsPlaying
+        {
+            get { return isPlaying; }
+            set
+            {
+                isPlaying = value;
+                RaisePropertyChanged("IsPlaying");
+            }
+        }
+
+        public ICommand Play
+        {
+            get
+            {
+                return new RelayCommand(new Action(async () =>
+                {
+                    Model.mss.Play(this);
                 }));
             }
         }

@@ -2,11 +2,13 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+        xmlns:model="clr-namespace:FreeLeaf.Model"
         DataContext="{Binding Path=Transfer, Source={StaticResource Locator}}"
         Title="FreeLeaf" Height="650" Width="1200" MinHeight="580" MinWidth="960" Background="White"
         WindowStartupLocation="CenterScreen" FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True" Icon="/FreeLeaf;component/Assets/icon.ico">
     
     <Window.Resources>
+        <model:cont x:Key="cont" Style1="{StaticResource aa1}" Style2="{StaticResource aa}" />
         <DataTemplate x:Key="GridViewCellTemplate">
             <TextBlock Text="{Binding}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
         </DataTemplate>
@@ -31,7 +33,8 @@
             </Grid.ColumnDefinitions>
             <Border BorderThickness="0,1,1,0" BorderBrush="#d6d6d6">
                 <ListView x:Name="ListLocal" ItemsSource="{Binding LocalDrive}" MouseDoubleClick="LocalList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}" Tag="{Binding LocalPath}"
-                          IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
+                          IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}"
+                          ItemContainerStyleSelector="{StaticResource cont}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
                             <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />
@@ -45,7 +48,8 @@
             <GridSplitter Grid.Column="1" Background="#ededed" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
             <Border Grid.Column="2" BorderThickness="1,1,0,0" BorderBrush="#d6d6d6">
                 <ListView x:Name="ListRemote" ItemsSource="{Binding RemoteFiles}" MouseDoubleClick="RemoteList_MouseDoubleClick" Style="{StaticResource LocalListViewStyle}" Tag="{Binding RemotePath}"
-                          IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}">
+                          IsSynchronizedWithCurrentItem="True" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" dd:DragDrop.DropHandler="{Binding}"
+                          ItemContainerStyleSelector="{StaticResource cont}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
                             <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />

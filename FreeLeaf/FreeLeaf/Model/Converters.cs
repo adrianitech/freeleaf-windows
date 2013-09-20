@@ -4,6 +4,17 @@ using System.Windows.Data;
 
 namespace FreeLeaf.Model
 {
+    public class cont : StyleSelector
+    {
+        public Style Style1 { get; set; }
+        public Style Style2 { get; set; }
+
+        public override Style SelectStyle(object item, DependencyObject container)
+        {
+            return item is MusicFileItem ? Style1 : Style2;
+        }
+    }
+
     public class ColorListItemTemplateSelector: DataTemplateSelector
     {
         public DataTemplate Template1 { get; set; }

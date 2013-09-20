@@ -98,9 +98,9 @@
                                     </Grid>
                                 </Border>
                                 <ControlTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding Progress}" Value="0">
+                                    <!--<DataTrigger Binding="{Binding Progress}" Value="0">
                                         <Setter TargetName="StackProgress" Property="Visibility" Value="Collapsed" />
-                                    </DataTrigger>
+                                    </DataTrigger>-->
                                     <Trigger Property="IsMouseOver" Value="True">
                                         <Setter TargetName="Button" Property="Visibility" Value="Visible" />
                                     </Trigger>

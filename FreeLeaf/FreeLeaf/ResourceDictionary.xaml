@@ -238,24 +238,26 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="GridViewColumnHeader">
-                    <Grid Background="WhiteSmoke">
-                        <TextBlock Margin="10,8" Text="{TemplateBinding Content}" Foreground="#333333" FontSize="12" TextTrimming="CharacterEllipsis" />
-                        <Thumb x:Name="PART_HeaderGripper" HorizontalAlignment="Right">
-                            <Thumb.Style>
-                                <Style TargetType="Thumb">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Thumb">
-                                                <Grid Background="Transparent" Width="9">
-                                                    <Rectangle Width="1" Fill="#eaeaea" HorizontalAlignment="Right" />
-                                                </Grid>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Style>
-                            </Thumb.Style>
-                        </Thumb>
-                    </Grid>
+                    <Border Background="WhiteSmoke" BorderThickness="0,0,0,1" BorderBrush="#eaeaea">
+                        <Grid>
+                            <TextBlock Margin="10,8" Text="{TemplateBinding Content}" Foreground="#333333" FontSize="12" TextTrimming="CharacterEllipsis" />
+                            <Thumb x:Name="PART_HeaderGripper" HorizontalAlignment="Right">
+                                <Thumb.Style>
+                                    <Style TargetType="Thumb">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Thumb">
+                                                    <Grid Background="Transparent" Width="9">
+                                                        <Rectangle Width="1" Fill="#eaeaea" HorizontalAlignment="Right" />
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Thumb.Style>
+                            </Thumb>
+                        </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -271,37 +273,73 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-        <Setter Property="ItemContainerStyle">
+    </Style>
+
+
+    <Style x:Key="aa" TargetType="{x:Type ListViewItem}">
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Foreground" Value="#333333" />
+        <Setter Property="Template">
             <Setter.Value>
-                <Style TargetType="{x:Type ListViewItem}">
-                    <Setter Property="Margin" Value="0" />
-                    <Setter Property="Foreground" Value="#333333" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="{x:Type ListViewItem}">
-                                <Border x:Name="Border" Height="40" Background="Transparent">
-                                    <Grid>
-                                        <Border BorderThickness="0,0,0,1" BorderBrush="#19000000" IsHitTestVisible="False" />
-                                        <GridViewRowPresenter />
-                                    </Grid>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Border" Property="Background" Value="WhiteSmoke" />
-                                    </Trigger>
-                                    <Trigger Property="IsSelected" Value="True">
-                                        <Setter TargetName="Border" Property="Background" Value="#e4715f" />
-                                        <Setter Property="Foreground" Value="White" />
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
+                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                    <Border x:Name="Border" Height="40" Background="Transparent">
+                        <Grid>
+                            <Border BorderThickness="0,0,0,1" BorderBrush="#19000000" IsHitTestVisible="False" Grid.RowSpan="2" />
+                            <GridViewRowPresenter />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="WhiteSmoke" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="#e4715f" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
     
-    
-    
+    <Style x:Key="aa1" TargetType="{x:Type ListViewItem}">
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Foreground" Value="#333333" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                    <Border x:Name="Border" Height="40" Background="Transparent">
+                        <Grid>
+                            <Rectangle Fill="#0C000000" HorizontalAlignment="Left" Width="{Binding VuValue}" Height="40" />
+                            <GridViewRowPresenter />
+                            <Grid HorizontalAlignment="Left" x:Name="ff" Visibility="Collapsed" Background="#FFE4715F">
+                                <Button Style="{StaticResource ToolbarButtonStyle}" Command="{Binding Play}">
+                                    <Path Data="M256,92.481c44.433,0,86.18,17.068,117.553,48.064C404.794,171.411,422,212.413,422,255.999s-17.206,84.588-48.448,115.455c-31.372,30.994-73.12,48.064-117.552,48.064s-86.179-17.07-117.552-48.064C107.206,340.587,90,299.585,90,255.999s17.206-84.588,48.448-115.453C169.821,109.55,211.568,92.481,256,92.481 M256,52.481c-113.771,0-206,91.117-206,203.518c0,112.398,92.229,203.52,206,203.52c113.772,0,206-91.121,206-203.52C462,143.599,369.772,52.481,256,52.481L256,52.481z M206.544,357.161V159.833l160.919,98.666L206.544,357.161z"
+                                       x:Name="p" Margin="5,0" Width="16" Stretch="Uniform" Fill="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                </Button>
+                            </Grid>
+                            <Border BorderThickness="0,0,0,1" BorderBrush="#19000000" IsHitTestVisible="False" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                            <Setter TargetName="p" Property="Data" Value="M256,92.481c44.433,0,86.18,17.068,117.553,48.064C404.794,171.411,422,212.413,422,255.999s-17.206,84.588-48.448,115.455c-31.372,30.994-73.12,48.064-117.552,48.064s-86.179-17.07-117.552-48.064C107.206,340.587,90,299.585,90,255.999s17.206-84.588,48.448-115.453C169.821,109.55,211.568,92.481,256,92.481 M256,52.481c-113.771,0-206,91.117-206,203.518c0,112.398,92.229,203.52,206,203.52c113.772,0,206-91.121,206-203.52C462,143.599,369.772,52.481,256,52.481L256,52.481z M240.258,346h-52.428V166h52.428V346z M326.17,346h-52.428V166h52.428V346z" />
+                        </DataTrigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="WhiteSmoke" />
+                            <Setter TargetName="ff" Property="Visibility" Value="Visible" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="#e4715f" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+
+
 </ResourceDictionary>

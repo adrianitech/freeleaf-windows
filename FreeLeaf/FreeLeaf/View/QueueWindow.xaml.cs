@@ -45,8 +45,8 @@ namespace FreeLeaf.View
 
                 if (model.forceStop) break;
 
-                model.Queue.Remove(model.Queue[i]);
-                i--;
+                //model.Queue.Remove(model.Queue[i]);
+                //i--;
             }
 
             model.IsBusy = false;
