@@ -9,6 +9,10 @@
     
     <Window.Resources>
         <model:cont x:Key="cont" Style1="{StaticResource aa1}" Style2="{StaticResource aa}" Style3="{StaticResource aa2}" />
+
+        <model:FileSizeConverter x:Key="FileSizeConverter" />
+        
+        
         <DataTemplate x:Key="GridViewCellTemplate">
             <TextBlock Text="Binding" Margin="10,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
         </DataTemplate>
@@ -54,7 +58,7 @@
                             <GridViewColumn Width="90" Header="Size">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Size}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Path=Size, Converter={StaticResource FileSizeConverter}}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -93,7 +97,7 @@
                             <GridViewColumn Width="90" Header="Size">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding Size}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding Path=Size, Converter={StaticResource FileSizeConverter}}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>

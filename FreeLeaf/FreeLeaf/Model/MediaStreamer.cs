@@ -15,19 +15,14 @@ namespace FreeLeaf.Model
         private BASS_FILEPROCS fileproc;
         private DispatcherTimer timer;
 
-        private MusicFileItem currentItem;
-        public MusicFileItem CurrentItem
-        {
-            get { return currentItem; }
-            set
-            {
-                currentItem = value;
-                
-            }
-        }
+
+        public MusicFileItem currentItem;
 
         public MediaStreamer()
         {
+            BassNet.Registration("adrianitech@gmail.com", "2X393121152222");
+            Bass.BASS_Init(-1, 44100, Un4seen.Bass.BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
+
             fileproc = new BASS_FILEPROCS(new FILECLOSEPROC(FileClose), new FILELENPROC(FileLength), new FILEREADPROC(FileRead), null);
             timer = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(20) };
             timer.Tick += timer_Tick;
@@ -41,7 +36,10 @@ namespace FreeLeaf.Model
 
             var val = 200 * (left + right);
 
-            currentItem.VuValue += (val - currentItem.VuValue) / 10f;
+            var diff = val - currentItem.VuValue;
+
+            if (diff > 0) currentItem.VuValue += diff / 10d;
+            else currentItem.VuValue += diff / 20d;
 
             currentItem.Time = TimeSpan.FromSeconds(
                 Bass.BASS_ChannelBytes2Seconds(stream,

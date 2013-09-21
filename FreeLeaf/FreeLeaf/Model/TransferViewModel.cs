@@ -118,7 +118,7 @@ namespace FreeLeaf.Model
         {
             if (IsInDesignMode) return;
 
-            Bass.BASS_Init(-1, 44100, Un4seen.Bass.BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
+            
 
             queue = new ObservableCollection<FileItem>();
             localFiles = new ObservableCollection<FileItem>();
@@ -416,9 +416,9 @@ namespace FreeLeaf.Model
                 var folder = obj.Value<bool>("folder");
 
 
-                if (!folder && mss.CurrentItem != null && mss.CurrentItem.Path.Equals(rpath))
+                if (!folder && mss.currentItem != null && mss.currentItem.Path.Equals(rpath))
                 {
-                    temp.Add(mss.CurrentItem);
+                    temp.Add(mss.currentItem);
                     continue;
                 }
 

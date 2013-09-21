@@ -80,4 +80,29 @@ namespace FreeLeaf.Model
             throw new System.NotImplementedException();
         }
     }
+
+    public class FileSizeConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            double length = (long)value;
+            if (length == 0) return string.Empty;
+
+            string[] sizes = { "B", "KB", "MB", "GB" };
+            int order = 0;
+
+            while (length >= 1024 && order + 1 < sizes.Length)
+            {
+                length = length / (double)1024;
+                order++;
+            }
+
+            return string.Format("{0:0.##} {1}", length, sizes[order]);
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
 }
