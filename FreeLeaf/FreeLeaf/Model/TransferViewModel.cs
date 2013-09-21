@@ -751,6 +751,8 @@ namespace FreeLeaf.Model
             return Formats.Contains(ext);
         }
 
+        public string TempPath;
+
         private double progress;
         public double Progress
         {

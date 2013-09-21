@@ -19,6 +19,12 @@ namespace FreeLeaf.Model
             }
             else
             {
+                if (item.TempPath != null)
+                {
+                    Process.Start(item.TempPath);
+                    return;
+                }
+
                 Task.Run(() =>
                 {
                     item.IsLoading = true;
@@ -42,12 +48,12 @@ namespace FreeLeaf.Model
                             buffer = new byte[8192];
 
                             var path = Path.GetTempFileName();
-                            path = Path.ChangeExtension(path, Path.GetExtension(item.Path));
+                            item.TempPath = Path.ChangeExtension(path, Path.GetExtension(item.Path));
 
                             var sw = new Stopwatch();
                             sw.Start();
 
-                            using (var stream = File.OpenWrite(path))
+                            using (var stream = File.OpenWrite(item.TempPath))
                             {
                                 while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
                                 {
@@ -62,7 +68,7 @@ namespace FreeLeaf.Model
                                 }
                             }
 
-                            Process.Start(path);
+                            Process.Start(item.TempPath);
                         }
                     }
 
