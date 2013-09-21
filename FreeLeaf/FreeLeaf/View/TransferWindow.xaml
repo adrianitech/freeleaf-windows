@@ -8,9 +8,9 @@
         WindowStartupLocation="CenterScreen" FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True" Icon="/FreeLeaf;component/Assets/icon.ico">
     
     <Window.Resources>
-        <model:cont x:Key="cont" Style1="{StaticResource aa1}" Style2="{StaticResource aa}" />
+        <model:cont x:Key="cont" Style1="{StaticResource aa1}" Style2="{StaticResource aa}" Style3="{StaticResource aa2}" />
         <DataTemplate x:Key="GridViewCellTemplate">
-            <TextBlock Text="{Binding}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+            <TextBlock Text="Binding" Margin="10,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
         </DataTemplate>
         <Storyboard x:Key="PulseAnimationStory">
             <DoubleAnimation From="1" To="0" Duration="0:0:0.500" Storyboard.TargetName="PulseCount" Storyboard.TargetProperty="Opacity" />
@@ -37,10 +37,34 @@
                           ItemContainerStyleSelector="{StaticResource cont}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="140" Header="Date modified" DisplayMemberBinding="{Binding Date}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="90" Header="Size" DisplayMemberBinding="{Binding Size}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="90" Header="Extension" DisplayMemberBinding="{Binding Extension}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="240" Header="Name">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="140" Header="Date modified">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Date}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="90" Header="Size">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Size}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="90" Header="Extension">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Extension}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>
@@ -52,10 +76,34 @@
                           ItemContainerStyleSelector="{StaticResource cont}">
                     <ListView.View>
                         <GridView AllowsColumnReorder="False" ColumnHeaderContainerStyle="{StaticResource GridViewColumnHeaderStyle}">
-                            <GridViewColumn Width="240" Header="Name" DisplayMemberBinding="{Binding Name}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="140" Header="Date modified" DisplayMemberBinding="{Binding Date}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="90" Header="Size" DisplayMemberBinding="{Binding Size}" CellTemplate="{StaticResource GridViewCellTemplate}" />
-                            <GridViewColumn Width="90" Header="Extension" DisplayMemberBinding="{Binding Extension}" CellTemplate="{StaticResource GridViewCellTemplate}" />
+                            <GridViewColumn Width="240" Header="Name">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="140" Header="Date modified">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Date}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="90" Header="Size">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Size}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Width="90" Header="Extension">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Extension}" Margin="5,0,0,0" Foreground="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListViewItem}, Path=Foreground}" FontSize="12" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
                         </GridView>
                     </ListView.View>
                 </ListView>

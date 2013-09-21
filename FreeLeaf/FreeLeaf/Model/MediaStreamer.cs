@@ -43,9 +43,9 @@ namespace FreeLeaf.Model
 
             currentItem.VuValue += (val - currentItem.VuValue) / 10f;
 
-            /*currentItem.Time = TimeSpan.FromSeconds(
+            currentItem.Time = TimeSpan.FromSeconds(
                 Bass.BASS_ChannelBytes2Seconds(stream,
-                    Bass.BASS_ChannelGetPosition(stream)));*/
+                    Bass.BASS_ChannelGetPosition(stream)));
         }
 
         private void FileClose(IntPtr data)
@@ -59,8 +59,6 @@ namespace FreeLeaf.Model
         {
             return 0; // Don't know the file size
         }
-
-        int tot = 0;
 
         private int FileRead(IntPtr i, int len, IntPtr data)
         {
@@ -77,13 +75,6 @@ namespace FreeLeaf.Model
             if (bytesRead > 0)
             {
                 Marshal.Copy(buffer, 0, i, bytesRead);
-
-                tot += bytesRead;
-
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    currentItem.ProgressSize = Helper.SizeToString(tot);
-                }), DispatcherPriority.Normal);
             }
 
             return bytesRead;
@@ -133,7 +124,7 @@ namespace FreeLeaf.Model
                 client.Connect(TransferViewModel.device.Address, 8000);
 
                 var ns = client.GetStream();
-                byte[] buffer = Encoding.UTF8.GetBytes("stream:" + item.Path);
+                byte[] buffer = Encoding.UTF8.GetBytes("receive:" + item.Path);
 
                 ns.Write(buffer, 0, buffer.Length);
                 ns.Flush();

@@ -4,8 +4,10 @@ using GongSolutions.Wpf.DragDrop;
 using Microsoft.Practices.ServiceLocation;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -251,17 +253,14 @@ namespace FreeLeaf.Model
 
         public Task ReceiveFile(FileItem item)
         {
-            return Task.Run(async () =>
+            return Task.Run(() =>
             {
-                string value = await SendCommand("receive:" + item.Path);
-                long size = long.Parse(value);
-
                 int bytesRead = 0;
 
                 secElapsed = 0;
                 bytesTotalRead = 0;
                 bytesSeqRead = 0;
-                bytesTotal = size;
+                bytesTotal = item.Size;
                 currentItem = item;
 
                 using (var client = new TcpClient())
@@ -273,7 +272,7 @@ namespace FreeLeaf.Model
 
                     using (var ns = client.GetStream())
                     {
-                        byte[] buffer = Encoding.UTF8.GetBytes("receive");
+                        byte[] buffer = Encoding.UTF8.GetBytes("receive:" + item.Path);
 
                         ns.Write(buffer, 0, buffer.Length);
                         ns.Flush();
@@ -287,7 +286,7 @@ namespace FreeLeaf.Model
                             while ((bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
                             {
                                 if (forceStop) break;
-                                //stream.Write(buffer, 0, bytesRead);
+                                stream.Write(buffer, 0, bytesRead);
 
                                 bytesTotalRead += bytesRead;
                                 bytesSeqRead += bytesRead;
@@ -323,7 +322,7 @@ namespace FreeLeaf.Model
                         drive.DriveType.ToString() :
                         drive.VolumeLabel,
                         drive.Name.Substring(0, drive.Name.Length - 1)),
-                    Size = Helper.SizeToString(drive.TotalSize),
+                    Size = drive.TotalSize,
                     Extension = drive.DriveFormat,
                     IsFolder = true
                 });
@@ -370,12 +369,13 @@ namespace FreeLeaf.Model
                 FileItem item;
 
                 if (MusicFileItem.IsMusicFile(file.FullName)) item = new MusicFileItem();
+                else if (PictureFileItem.IsPictureFile(file.FullName)) item = new PictureFileItem();
                 else item = new FileItem();
 
                 item.Model = this;
                 item.Path = file.FullName;
                 item.Name = file.Name;
-                item.Size = Helper.SizeToString(file.Length);
+                item.Size = file.Length;
                 item.Extension = file.Extension.Length >= 1 ? file.Extension.Substring(1).ToUpper() : "";
                 item.Date = file.LastWriteTime.ToString();
                 item.IsFolder = false;
@@ -425,10 +425,10 @@ namespace FreeLeaf.Model
                 var name = obj.Value<string>("name");
                 
 
-                var size = "";
+                long size = 0;
                 if (!folder)
                 {
-                    size = Helper.SizeToString(obj.Value<long>("size"));
+                    size = obj.Value<long>("size");
                 }
 
                 var ext = Path.GetExtension(name).ToUpper();
@@ -440,6 +440,7 @@ namespace FreeLeaf.Model
                 FileItem item;
 
                 if (MusicFileItem.IsMusicFile(rpath)) item = new MusicFileItem();
+                else if (PictureFileItem.IsPictureFile(rpath)) item = new PictureFileItem();
                 else item = new FileItem();
 
                 item.Model = this;
@@ -499,31 +500,15 @@ namespace FreeLeaf.Model
                 path = dropItem.Tag.ToString();
             }
 
-            if (dropInfo.Data is List<FileItem>)
+            var items = dropInfo.DragInfo.SourceItems;
+            foreach (FileItem item in items)
             {
-                var items = dropInfo.Data as List<FileItem>;
-                foreach (var item in items)
+                if (item.IsFolder) continue;
+                if (Queue.FirstOrDefault(t => t.Path.Equals(item.Path)) == null)
                 {
-                    if (item.IsFolder) continue;
-                    if (Queue.FirstOrDefault(t => t.Path.Equals(item.Path)) == null)
-                    {
-                        item.Progress = 0;
-                        item.Destination = path;
-                        Queue.Add(item);
-                    }
-                }
-            }
-            else if (dropInfo.Data is FileItem)
-            {
-                var item = dropInfo.Data as FileItem;
-                if (!item.IsFolder)
-                {
-                    if (Queue.FirstOrDefault(t => t.Path.Equals(item.Path)) == null)
-                    {
-                        item.Progress = 0;
-                        item.Destination = path;
-                        Queue.Add(item);
-                    }
+                    item.Progress = 0;
+                    item.Destination = path;
+                    Queue.Add(item);
                 }
             }
         }
@@ -589,8 +574,8 @@ namespace FreeLeaf.Model
             }
         }
 
-        private string size;
-        public string Size
+        private long size;
+        public long Size
         {
             get { return size; }
             set
@@ -722,6 +707,17 @@ namespace FreeLeaf.Model
             }
         }
 
+        private TimeSpan time;
+        public TimeSpan Time
+        {
+            get { return time; }
+            set
+            {
+                time = value;
+                RaisePropertyChanged("Time");
+            }
+        }
+
         private bool isPlaying;
         public bool IsPlaying
         {
@@ -740,6 +736,50 @@ namespace FreeLeaf.Model
                 return new RelayCommand(new Action(async () =>
                 {
                     Model.mss.Play(this);
+                }));
+            }
+        }
+    }
+
+    public class PictureFileItem : FileItem
+    {
+        public static string[] Formats = new string[] { ".png", ".gif", ".jpg", ".jpeg", ".bmp" };
+
+        public static bool IsPictureFile(string path)
+        {
+            var ext = System.IO.Path.GetExtension(path).ToLower();
+            return Formats.Contains(ext);
+        }
+
+        private double progress;
+        public double Progress
+        {
+            get { return progress; }
+            set
+            {
+                progress = value;
+                RaisePropertyChanged("Progress");
+            }
+        }
+
+        private bool isLoading;
+        public bool IsLoading
+        {
+            get { return isLoading; }
+            set
+            {
+                isLoading = value;
+                RaisePropertyChanged("IsLoading");
+            }
+        }
+
+        public ICommand Preview
+        {
+            get
+            {
+                return new RelayCommand(new Action(() =>
+                {
+                    PicturePreviewer.PreviewItem(this);
                 }));
             }
         }

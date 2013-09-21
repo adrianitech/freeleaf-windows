@@ -8,10 +8,13 @@ namespace FreeLeaf.Model
     {
         public Style Style1 { get; set; }
         public Style Style2 { get; set; }
+        public Style Style3 { get; set; }
 
         public override Style SelectStyle(object item, DependencyObject container)
         {
-            return item is MusicFileItem ? Style1 : Style2;
+            if (item is MusicFileItem) return Style1;
+            if (item is PictureFileItem) return Style3;
+            return Style2;
         }
     }
 
@@ -57,6 +60,19 @@ namespace FreeLeaf.Model
         public object Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             return value is bool && (bool)value ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public class NegateBoolConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        {
+            return !(value is bool && (bool)value);
         }
 
         public object ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture)

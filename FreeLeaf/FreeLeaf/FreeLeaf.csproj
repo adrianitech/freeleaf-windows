@@ -91,6 +91,7 @@
     </ApplicationDefinition>
     <Compile Include="Model\Helper.cs" />
     <Compile Include="Model\MediaStreamer.cs" />
+    <Compile Include="Model\PicturePreviewer.cs" />
     <Compile Include="View\QueueWindow.xaml.cs">
       <DependentUpon>QueueWindow.xaml</DependentUpon>
     </Compile>
