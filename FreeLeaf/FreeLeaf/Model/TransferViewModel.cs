@@ -142,7 +142,7 @@ namespace FreeLeaf.Model
             {
                 long bytesRemaining = bytesTotal - bytesTotalRead;
                 double secRemaining = bytesRemaining * secElapsed / (double)bytesTotalRead;
-                currentItem.TimeLeft = Helper.getTimeToETA(secRemaining + 1);
+                currentItem.TimeLeft = Helper.TimeToETA(secRemaining + 1);
             }
 
             bytesSeqRead = 0;
@@ -175,7 +175,13 @@ namespace FreeLeaf.Model
                     client.NoDelay = true;
                     client.ReceiveBufferSize = 8192;
                     client.SendBufferSize = 8192;
-                    client.Connect(TransferViewModel.device.Address, PORT);
+
+                    try { client.Connect(TransferViewModel.device.Address, PORT); }
+                    catch (SocketException ex)
+                    {
+                        MessageBox.Show("Cannot connect to the device");
+                        return null;
+                    }
 
                     using (var ns = client.GetStream())
                     {

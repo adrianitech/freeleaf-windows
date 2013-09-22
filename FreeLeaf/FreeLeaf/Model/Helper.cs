@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FreeLeaf.Model
 {
@@ -10,20 +6,22 @@ namespace FreeLeaf.Model
     {
         public static string SizeToString(long size)
         {
+            double length = size;
+            if (length == 0) return string.Empty;
+
             string[] sizes = { "B", "KB", "MB", "GB" };
-            double len = size;
             int order = 0;
 
-            while (len >= 1024 && order + 1 < sizes.Length)
+            while (length >= 1024 && order + 1 < sizes.Length)
             {
+                length = length / (double)1024;
                 order++;
-                len = len / (double)1024;
             }
 
-            return string.Format("{0:0.##} {1}", len, sizes[order]);
+            return string.Format("{0:0.##} {1}", length, sizes[order]);
         }
 
-        public static string getTimeToETA(double sec)
+        public static string TimeToETA(double sec)
         {
             var ts = TimeSpan.FromSeconds(sec);
 

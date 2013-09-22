@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:model="clr-namespace:FreeLeaf.Model"
         DataContext="{Binding Path=Transfer, Source={StaticResource Locator}}"
-        Title="Queue" Height="600" Width="450" MinWidth="450" MinHeight="400" WindowStartupLocation="CenterOwner" Background="White"
+        Title="FreeLeaf | Queue" Height="500" Width="450" MinWidth="400" MinHeight="400" WindowStartupLocation="CenterOwner" Background="White"
         FontFamily="../Assets/#Segoe WP" UseLayoutRounding="True" ResizeMode="CanResize" ShowInTaskbar="False" Icon="/FreeLeaf;component/Assets/icon.ico">
     
     <Window.Resources>
@@ -67,10 +67,17 @@
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Margin="10" Orientation="Vertical">
-                                            <TextBlock Foreground="#333333" FontSize="12" TextTrimming="CharacterEllipsis">
-                                                File name: <Run Text="{Binding Path=Name, Mode=OneWay}" /><LineBreak />
-                                                Destination: <Run Text="{Binding Path=Destination, Mode=OneWay}" />
-                                            </TextBlock>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+                                                <Path Name="Path" Data="{StaticResource UploadPath}" Stretch="Uniform" Height="30" Fill="#e4715f" Margin="0,0,10,0" />
+                                                <TextBlock Grid.Column="1" Foreground="#333333" FontSize="12" TextTrimming="CharacterEllipsis">
+                                                    File name: <Run Text="{Binding Path=Name, Mode=OneWay}" /><LineBreak />
+                                                    Destination: <Run Text="{Binding Path=Destination, Mode=OneWay}" />
+                                                </TextBlock>
+                                            </Grid>
                                             <StackPanel Name="StackProgress">
                                                 <ProgressBar Margin="0,6,0,2" Width="250" Height="4" Value="{Binding Progress}" HorizontalAlignment="Left">
                                                     <ProgressBar.Style>
@@ -94,10 +101,15 @@
                                                 </TextBlock>
                                             </StackPanel>
                                         </StackPanel>
-                                        <Button Name="Button" Margin="0,0,10,0" Grid.Column="1" Content="Delete" Command="{Binding RemoveFromQueue}" Visibility="Collapsed" VerticalAlignment="Center" />
+                                        <Button Name="Button" Grid.Column="1" Command="{Binding RemoveFromQueue}" Visibility="Collapsed" Style="{StaticResource ToolbarButtonStyle}">
+                                            <Path Data="{StaticResource DeletePath}" Margin="10,0" Stretch="Uniform" Fill="#333333" Height="18" />
+                                        </Button>
                                     </Grid>
                                 </Border>
                                 <ControlTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsRemote}" Value="True">
+                                        <Setter TargetName="Path" Property="Data" Value="{StaticResource DownloadPath}" />
+                                    </DataTrigger>
                                     <DataTrigger Binding="{Binding Progress}" Value="0">
                                         <Setter TargetName="StackProgress" Property="Visibility" Value="Collapsed" />
                                     </DataTrigger>

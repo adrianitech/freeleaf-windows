@@ -1,9 +1,34 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib"
                     xmlns:model="clr-namespace:FreeLeaf.Model">
     
     
     
+    <!-- Converters -->
+    
+    <model:NegateBooleanConverter x:Key="NegateBooleanConverter" />
+    
+    
+    
+    <!-- Brushes -->
+    
+    <Geometry x:Key="FolderPath">M166.801,131.66l20.984,20.893c16.654,16.581,38.769,25.712,62.27,25.712H422V380.34H90V131.66H166.801M183.317,91.66H50v328.68h412V138.265H250.055c-12.762,0-25.004-5.055-34.048-14.059L183.317,91.66z</Geometry>
+    <Geometry x:Key="FolderAddPath">M462,328.654h-51.733v-51.732h-39.951v51.732h-51.732v39.951h51.732v51.732h39.951v-51.732H462V328.654z M280.587,420.338H50V91.662h133.317l32.689,32.545c9.044,9.004,21.286,14.059,34.048,14.059H462v100.297h-40v-60.297H250.055c-23.501,0-45.615-9.131-62.27-25.713l-20.984-20.891H90v248.676h190.587V420.338z</Geometry>
+    <Geometry x:Key="RenamePath">M283.977,101.757V241h40.198v30h-40.198v139.243c0,9.271,7.516,16.786,16.786,16.786h38.412V462h-48.316c-13.533,0-26.34-6.127-34.832-16.665l-0.068-0.085c-8.49,10.589-21.328,16.75-34.9,16.75h-48.232v-34.971h38.412c9.271,0,16.786-7.516,16.786-16.786V271h-40.198v-30h40.198V101.757c0-9.271-7.516-16.786-16.786-16.786h-38.412V50h48.316c13.533,0,26.34,6.127,34.832,16.665l0.068,0.085c8.49-10.589,21.328-16.75,34.9-16.75h48.232v34.971h-38.412C291.492,84.971,283.977,92.486,283.977,101.757z M85,205.417H50v101h35V205.417z M85,85h42.825v-0.029V50H50v121.417h35V85zM127.825,427.029V427H85v-86.583H50V462h77.825V427.029z M384.175,50v34.971V85H427v86.417h35V50H384.175z M427,427h-42.825v0.029V462H462V340.417h-35V427z M427,306.417h35v-101h-35V306.417z</Geometry>
+    <Geometry x:Key="DeletePath">M462,256c0,113.771-92.229,206-206,206S50,369.771,50,256S142.229,50,256,50S462,142.229,462,256zM422,256c0-91.755-74.258-166-166-166c-91.755,0-166,74.259-166,166c0,91.755,74.258,166,166,166C347.755,422,422,347.741,422,256zM325.329,362.49l-67.327-67.324l-67.329,67.332l-36.164-36.186l67.314-67.322l-67.321-67.317l36.185-36.164l67.31,67.301l67.3-67.309l36.193,36.17l-67.312,67.315l67.32,67.31L325.329,362.49z</Geometry>
+    <Geometry x:Key="RefreshPath">M373.223,142.573l-37.252,37.253c-20.225-20.224-48.162-32.731-79.021-32.731c-61.719,0-111.752,50.056-111.752,111.776c0,0.016,0-0.016,0,0h43.412l-69.342,69.315L50,258.871h42.514c0-0.008,0,0.006,0,0c0-90.816,73.621-164.46,164.436-164.46C302.357,94.411,343.467,112.816,373.223,142.573z M462,253.129l-69.268-69.316l-69.342,69.316h43.412c0,0.016,0-0.017,0,0c0,61.72-50.033,111.776-111.752,111.776c-30.859,0-58.797-12.508-79.021-32.731l-37.252,37.253c29.758,29.757,70.867,48.162,116.273,48.162c90.814,0,164.436-73.644,164.436-164.459c0-0.007,0,0.008,0,0H462z</Geometry>
+    <Geometry x:Key="QueuePath">M256,90c44.34,0,86.026,17.267,117.38,48.62C404.732,169.974,422,211.66,422,256s-17.268,86.026-48.62,117.38C342.026,404.733,300.34,422,256,422c-44.34,0-86.026-17.267-117.38-48.62C107.267,342.026,90,300.34,90,256s17.267-86.026,48.62-117.38C169.974,107.267,211.66,90,256,90z M256,50C142.229,50,50,142.229,50,256s92.229,206,206,206s206-92.229,206-206S369.771,50,256,50z M359.97,210.212H156.03v-32.175H359.97V210.212z M359.97,239.912H156.03v32.175H359.97V239.912z M359.97,301.787H156.03v32.175H359.97V301.787z</Geometry>
+
+    <Geometry x:Key="PlayPath">M256,92.481c44.433,0,86.18,17.068,117.553,48.064C404.794,171.411,422,212.413,422,255.999s-17.206,84.588-48.448,115.455c-31.372,30.994-73.12,48.064-117.552,48.064s-86.179-17.07-117.552-48.064C107.206,340.587,90,299.585,90,255.999s17.206-84.588,48.448-115.453C169.821,109.55,211.568,92.481,256,92.481 M256,52.481c-113.771,0-206,91.117-206,203.518c0,112.398,92.229,203.52,206,203.52c113.772,0,206-91.121,206-203.52C462,143.599,369.772,52.481,256,52.481L256,52.481z M206.544,357.161V159.833l160.919,98.666L206.544,357.161z</Geometry>
+    <Geometry x:Key="PausePath">M256,92.481c44.433,0,86.18,17.068,117.553,48.064C404.794,171.411,422,212.413,422,255.999s-17.206,84.588-48.448,115.455c-31.372,30.994-73.12,48.064-117.552,48.064s-86.179-17.07-117.552-48.064C107.206,340.587,90,299.585,90,255.999s17.206-84.588,48.448-115.453C169.821,109.55,211.568,92.481,256,92.481 M256,52.481c-113.771,0-206,91.117-206,203.518c0,112.398,92.229,203.52,206,203.52c113.772,0,206-91.121,206-203.52C462,143.599,369.772,52.481,256,52.481L256,52.481z M240.258,346h-52.428V166h52.428V346z M326.17,346h-52.428V166h52.428V346z</Geometry>
+    <Geometry x:Key="ImagePath">M142.843,202.59c0-16.86,13.671-30.53,30.531-30.53s30.53,13.67,30.53,30.53c0,16.862-13.67,30.53-30.53,30.53S142.843,219.452,142.843,202.59z M297.696,203.567l-50.608,71.905l-27.504-28.349l-77.604,88.174h242.578L297.696,203.567z M422,140.5v231H90v-231H422 M462,100.5H50v311h412V100.5L462,100.5z</Geometry>
+
+    <Geometry x:Key="DownloadPath">M360.353,277.271L256.998,380.802L153.647,277.271h47.529v-38.77h111.646v38.77H360.353zM201.177,220.49h111.646v-31.318H201.177V220.49z M312.823,172.729v-25.53H201.177v25.53H312.823z M90,256c0,91.756,74.258,166,166,166c91.755,0,166-74.258,166-166c0-91.755-74.258-166-166-166C164.245,90,90,164.259,90,256z M462,256c0,113.771-92.229,206-206,206S50,369.771,50,256c0-113.771,92.229-206,206-206S462,142.229,462,256z</Geometry>
+    <Geometry x:Key="UploadPath">M154.647,236.729l103.354-103.531l103.351,103.531h-47.529v38.77H202.177v-38.77H154.647zM313.823,293.51H202.177v31.318h111.646V293.51z M202.177,341.271v25.53h111.646v-25.53H202.177z M422,256c0-91.756-74.258-166-166-166c-91.755,0-166,74.258-166,166c0,91.755,74.258,166,166,166C347.755,422,422,347.741,422,256z M50,256c0-113.771,92.229-206,206-206s206,92.229,206,206c0,113.771-92.229,206-206,206S50,369.771,50,256z</Geometry>
+
+
+
     <!-- Button styles -->
     
     <Style x:Key="ToolbarButtonStyle" TargetType="{x:Type Button}">
@@ -26,16 +51,6 @@
         </Setter>
     </Style>
     
-    
-    <Style TargetType="Hyperlink">
-        <Setter Property="Foreground" Value="White" />
-        <Setter Property="Cursor" Value="Hand" />
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Foreground" Value="#CCFFFFFF" />
-            </Trigger>
-        </Style.Triggers>
-    </Style>
     
     
     <!-- ScrollBar styles -->
@@ -274,13 +289,8 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-
-
-
-
-
-    <Style x:Key="Generti" TargetType="{x:Type ListViewItem}">
+    
+    <Style x:Key="GenericListViewItem" TargetType="{x:Type ListViewItem}">
         <Setter Property="Margin" Value="0" />
         <Setter Property="Height" Value="40" />
         <Setter Property="Foreground" Value="#333333" />
@@ -289,21 +299,12 @@
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     </Style>
-
-
-
-
-
-
-
-
-
-
-    <Style x:Key="aa" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource Generti}">
+    
+    <Style x:Key="SimpleListViewItem" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource GenericListViewItem}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ListViewItem}">
-                    <Border x:Name="Border" Background="Transparent">
+                    <Border Name="Border" Background="Transparent">
                         <Grid>
                             <GridViewRowPresenter />
                             <Border BorderThickness="0,0,0,1" BorderBrush="#19000000" IsHitTestVisible="False" />
@@ -323,34 +324,33 @@
         </Setter>
     </Style>
 
-    <Style x:Key="aa1" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource Generti}">
+    <Style x:Key="MusicListViewItem" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource GenericListViewItem}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ListViewItem}">
-                    <Border x:Name="Border" Background="Transparent">
+                    <Border Name="Border" Background="Transparent">
                         <Grid>
                             <GridViewRowPresenter />
-                            <Grid HorizontalAlignment="Left" x:Name="ff" Visibility="Collapsed" Background="#FFE4715F">
+                            <Grid Name="Overlay" HorizontalAlignment="Left" Visibility="Collapsed" Background="#e4715f">
                                 <StackPanel Orientation="Horizontal">
                                     <Button Style="{StaticResource ToolbarButtonStyle}" Command="{Binding Play}">
-                                        <Path Data="M256,92.481c44.433,0,86.18,17.068,117.553,48.064C404.794,171.411,422,212.413,422,255.999s-17.206,84.588-48.448,115.455c-31.372,30.994-73.12,48.064-117.552,48.064s-86.179-17.07-117.552-48.064C107.206,340.587,90,299.585,90,255.999s17.206-84.588,48.448-115.453C169.821,109.55,211.568,92.481,256,92.481 M256,52.481c-113.771,0-206,91.117-206,203.518c0,112.398,92.229,203.52,206,203.52c113.772,0,206-91.121,206-203.52C462,143.599,369.772,52.481,256,52.481L256,52.481z M206.544,357.161V159.833l160.919,98.666L206.544,357.161z"
-                                       x:Name="p" Margin="5,0" Width="16" Stretch="Uniform" Fill="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        <Path Name="Path" Data="{StaticResource PlayPath}" Margin="5,0" Width="16" Stretch="Uniform" Fill="White" VerticalAlignment="Center" />
                                     </Button>
-                                    <TextBlock x:Name="tt" Margin="5,0,10,0" Text="{Binding Path=Time, StringFormat=hh\\:mm\\:ss}" Foreground="White" FontSize="12" VerticalAlignment="Center" Visibility="Collapsed" />
+                                    <TextBlock Name="Text" Margin="5,0,10,0" Text="{Binding Path=Time, StringFormat=hh\\:mm\\:ss}" Foreground="White" FontSize="12" VerticalAlignment="Center" Visibility="Collapsed" />
                                 </StackPanel>
                             </Grid>
-                            <Rectangle Fill="#0C000000" HorizontalAlignment="Left" Width="{Binding VuValue}" Height="40" IsHitTestVisible="False" />
+                            <Rectangle Fill="#0C000000" HorizontalAlignment="Left" Width="{Binding VuValue}" IsHitTestVisible="False" />
                             <Border BorderThickness="0,0,0,1" BorderBrush="#19000000" IsHitTestVisible="False" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsPlaying}" Value="True">
-                            <Setter TargetName="p" Property="Data" Value="M256,92.481c44.433,0,86.18,17.068,117.553,48.064C404.794,171.411,422,212.413,422,255.999s-17.206,84.588-48.448,115.455c-31.372,30.994-73.12,48.064-117.552,48.064s-86.179-17.07-117.552-48.064C107.206,340.587,90,299.585,90,255.999s17.206-84.588,48.448-115.453C169.821,109.55,211.568,92.481,256,92.481 M256,52.481c-113.771,0-206,91.117-206,203.518c0,112.398,92.229,203.52,206,203.52c113.772,0,206-91.121,206-203.52C462,143.599,369.772,52.481,256,52.481L256,52.481z M240.258,346h-52.428V166h52.428V346z M326.17,346h-52.428V166h52.428V346z" />
-                            <Setter TargetName="tt" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Path" Property="Data" Value="{StaticResource PausePath}" />
+                            <Setter TargetName="Text" Property="Visibility" Value="Visible" />
                         </DataTrigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="WhiteSmoke" />
-                            <Setter TargetName="ff" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Overlay" Property="Visibility" Value="Visible" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="#e4715f" />
@@ -362,38 +362,34 @@
         </Setter>
     </Style>
 
-    <model:NegateBoolConverter x:Key="NegateBoolConverter" />
-
-    <Style x:Key="aa2" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource Generti}">
+    <Style x:Key="PictureListViewItem" TargetType="{x:Type ListViewItem}" BasedOn="{StaticResource GenericListViewItem}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ListViewItem}">
-                    <Border x:Name="Border" Background="Transparent">
+                    <Border Name="Border" Background="Transparent">
                         <Grid>
                             <GridViewRowPresenter VerticalAlignment="Center" />
-                            <Grid HorizontalAlignment="Left" x:Name="ff" Visibility="Collapsed" Background="#FFE4715F">
+                            <Grid Name="Overlay" HorizontalAlignment="Left" Visibility="Collapsed" Background="#FFE4715F">
                                 <StackPanel Orientation="Horizontal">
-                                    <Button IsEnabled="{Binding Path=IsLoading, Converter={StaticResource NegateBoolConverter}}" Style="{StaticResource ToolbarButtonStyle}" Command="{Binding Preview}">
-                                        <Path Data="M142.843,202.59c0-16.86,13.671-30.53,30.531-30.53s30.53,13.67,30.53,30.53c0,16.862-13.67,30.53-30.53,30.53S142.843,219.452,142.843,202.59z M297.696,203.567l-50.608,71.905l-27.504-28.349l-77.604,88.174h242.578L297.696,203.567z M422,140.5v231H90v-231H422 M462,100.5H50v311h412V100.5L462,100.5z"
-                                       x:Name="p" Margin="5,0" Width="16" Stretch="Uniform" Fill="White" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    <Button IsEnabled="{Binding Path=IsLoading, Converter={StaticResource NegateBooleanConverter}}" Style="{StaticResource ToolbarButtonStyle}" Command="{Binding Preview}">
+                                        <Path Name="Path" Data="{StaticResource ImagePath}" Margin="5,0" Width="16" Stretch="Uniform" Fill="White" VerticalAlignment="Center" />
                                     </Button>
-                                    <TextBlock x:Name="tt" Margin="5,0,10,0" Foreground="White" FontSize="12" VerticalAlignment="Center" Visibility="Collapsed">
+                                    <TextBlock Name="Text" Margin="5,0,10,0" Foreground="White" FontSize="12" VerticalAlignment="Center" Visibility="Collapsed">
                                         <Run Text="{Binding Path=Progress, Mode=OneWay, StringFormat=\{0:0\}}" />%
                                     </TextBlock>
                                 </StackPanel>
                             </Grid>
-                            <Rectangle Fill="#0C000000" HorizontalAlignment="Left" Width="{Binding VuValue}" Height="40" IsHitTestVisible="False" />
                             <Border BorderThickness="0,0,0,1" BorderBrush="#19000000" IsHitTestVisible="False" />
                         </Grid>
                     </Border>
                     <ControlTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsLoading}" Value="True">
-                            <Setter TargetName="tt" Property="Visibility" Value="Visible" />
-                            <Setter TargetName="ff" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Text" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Overlay" Property="Visibility" Value="Visible" />
                         </DataTrigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="WhiteSmoke" />
-                            <Setter TargetName="ff" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Overlay" Property="Visibility" Value="Visible" />
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="#e4715f" />
@@ -404,8 +400,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-
-
-
-
+    
+    
+    
 </ResourceDictionary>

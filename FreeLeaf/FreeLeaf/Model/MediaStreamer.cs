@@ -1,9 +1,7 @@
-﻿using GalaSoft.MvvmLight;
-using System;
+﻿using System;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows;
 using System.Windows.Threading;
 using Un4seen.Bass;
 
@@ -14,7 +12,6 @@ namespace FreeLeaf.Model
         private int stream;
         private BASS_FILEPROCS fileproc;
         private DispatcherTimer timer;
-
 
         public MusicFileItem currentItem;
 
@@ -32,12 +29,9 @@ namespace FreeLeaf.Model
         {
             var level = Bass.BASS_ChannelGetLevel(stream);
             var left = Utils.LowWord32(level) / (double)Int16.MaxValue;
-            var right = Utils.HighWord32(level)  / (double)Int16.MaxValue;
+            var right = Utils.HighWord32(level) / (double)Int16.MaxValue;
 
-            var val = 200 * (left + right);
-
-            var diff = val - currentItem.VuValue;
-
+            var diff = 200 * (left + right) - currentItem.VuValue;
             if (diff > 0) currentItem.VuValue += diff / 10d;
             else currentItem.VuValue += diff / 20d;
 
@@ -49,8 +43,8 @@ namespace FreeLeaf.Model
         private void FileClose(IntPtr data)
         {
             var handle = (GCHandle)data;
-            var ns = (NetworkStream)handle.Target;
-            if (ns != null) ns.Close();
+            var socket = (TcpClient)handle.Target;
+            if (socket != null) socket.Close();
         }
 
         private long FileLength(IntPtr data)
@@ -61,12 +55,15 @@ namespace FreeLeaf.Model
         private int FileRead(IntPtr i, int len, IntPtr data)
         {
             var handle = (GCHandle)data;
-            var ns = (NetworkStream)handle.Target;
 
-            if (ns == null) return 0;
+            var socket = (TcpClient)handle.Target;
+            if (socket == null) return 0;
 
-            byte[] buffer = new byte[len];
+            var ns = socket.GetStream();
+
             int bytesRead = 0;
+            byte[] buffer = new byte[len];
+
             try { bytesRead = ns.Read(buffer, 0, len); }
             catch { }
 
@@ -85,14 +82,14 @@ namespace FreeLeaf.Model
                 if (Bass.BASS_ChannelIsActive(stream) == BASSActive.BASS_ACTIVE_PLAYING)
                 {
                     Bass.BASS_ChannelPause(stream);
-                    timer.Stop();
                     currentItem.IsPlaying = false;
+                    timer.Stop();
                 }
                 else
                 {
                     Bass.BASS_ChannelPlay(stream, false);
-                    timer.Start();
                     currentItem.IsPlaying = true;
+                    timer.Start();
                 }
                 return;
             }
@@ -110,15 +107,9 @@ namespace FreeLeaf.Model
 
             currentItem = item;
 
-            timer.Start();
-
-
             if (item.IsRemote)
             {
-
                 var client = new TcpClient();
-
-                client.NoDelay = true;
                 client.Connect(TransferViewModel.device.Address, 8000);
 
                 var ns = client.GetStream();
@@ -127,10 +118,8 @@ namespace FreeLeaf.Model
                 ns.Write(buffer, 0, buffer.Length);
                 ns.Flush();
 
-                GCHandle handle = GCHandle.Alloc(ns);
-
+                var handle = GCHandle.Alloc(client);
                 stream = Bass.BASS_StreamCreateFileUser(BASSStreamSystem.STREAMFILE_BUFFER, BASSFlag.BASS_DEFAULT, fileproc, (IntPtr)handle);
-
             }
             else
             {
@@ -138,6 +127,7 @@ namespace FreeLeaf.Model
             }
 
             currentItem.IsPlaying = Bass.BASS_ChannelPlay(stream, false);
+            timer.Start();
         }
     }
 }
